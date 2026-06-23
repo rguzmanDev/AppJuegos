@@ -12,7 +12,7 @@ const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 6);
 
 const defaultOrigins = [
   "http://localhost:3000",
-  "https://appjuegos.fly.dev",
+  "https://cuddle.onrender.com",
   "https://cuddle.rgcore.dev",
 ];
 const allowedOrigins = (process.env.CORS_ORIGIN ?? defaultOrigins.join(","))
@@ -20,7 +20,15 @@ const allowedOrigins = (process.env.CORS_ORIGIN ?? defaultOrigins.join(","))
   .map((o) => o.trim())
   .filter(Boolean);
 
-const httpServer = createServer();
+const httpServer = createServer((req, res) => {
+  if (req.url === "/" || req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("ok");
+    return;
+  }
+  res.writeHead(404);
+  res.end();
+});
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
     origin: (origin, callback) => {

@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import type { ServerToClientEvents, ClientToServerEvents } from "./types";
 
 const HOST_WS_URLS: Record<string, string> = {
-  "appjuegos.fly.dev": "https://appjuegos-ws.fly.dev",
+  "cuddle.onrender.com": "https://cuddle-ws.onrender.com",
   "cuddle.rgcore.dev": "https://ws-cuddle.rgcore.dev",
 };
 
@@ -17,7 +17,10 @@ function resolveWsUrl(): string {
     if (hostname !== "localhost" && hostname !== "127.0.0.1") {
       const fromEnv = process.env.NEXT_PUBLIC_WS_URL;
       if (fromEnv && !fromEnv.includes("localhost")) return fromEnv;
-      if (hostname.endsWith(".fly.dev")) return "https://appjuegos-ws.fly.dev";
+      if (hostname.endsWith(".onrender.com") && !hostname.endsWith("-ws.onrender.com")) {
+        const base = hostname.slice(0, -".onrender.com".length);
+        return `https://${base}-ws.onrender.com`;
+      }
     }
   }
 

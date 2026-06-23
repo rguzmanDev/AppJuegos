@@ -14,7 +14,7 @@ export function SiteFooter() {
           rel="noopener noreferrer"
           className="site-footer-brand"
         >
-          rgcore<span className="site-footer-tld">.dev</span>
+          rgcore.dev
         </a>
       </p>
     </footer>

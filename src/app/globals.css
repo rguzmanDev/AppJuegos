@@ -256,11 +256,6 @@ textarea {
     filter: drop-shadow(0 0 12px rgba(201, 123, 142, 0.35));
   }
 
-  .site-footer-tld {
-    font-weight: 600;
-    opacity: 0.92;
-  }
-
   /* Contenedor de página: llena el espacio entre header y footer sin forzar 100vh extra */
   .app-main {
     @apply flex flex-1 flex-col w-full;

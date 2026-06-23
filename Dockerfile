@@ -19,6 +19,9 @@ RUN npm ci --include=dev
 
 COPY . .
 
+ARG NEXT_PUBLIC_WS_URL=https://appjuegos-ws.fly.dev
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+
 RUN npm run build
 
 RUN npm prune --omit=dev

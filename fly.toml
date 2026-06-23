@@ -2,6 +2,10 @@ app = 'appjuegos'
 primary_region = 'mia'
 
 [build]
+  dockerfile = 'Dockerfile'
+
+  [build.args]
+    NEXT_PUBLIC_WS_URL = 'https://appjuegos-ws.fly.dev'
 
 [[mounts]]
   source = 'data'

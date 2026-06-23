@@ -1,0 +1,21 @@
+app = 'appjuegos-ws'
+primary_region = 'mia'
+
+[build]
+  dockerfile = 'Dockerfile.ws'
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory_mb = 256
+  cpu_kind = 'shared'
+  cpus = 1
+
+[env]
+  CORS_ORIGIN = 'https://appjuegos.fly.dev,https://cuddle.rgcore.dev'

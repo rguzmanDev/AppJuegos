@@ -10,9 +10,24 @@ import type {
 
 const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 6);
 
+const defaultOrigins = [
+  "http://localhost:3000",
+  "https://appjuegos.fly.dev",
+  "https://cuddle.rgcore.dev",
+];
+const allowedOrigins = (process.env.CORS_ORIGIN ?? defaultOrigins.join(","))
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 const httpServer = createServer();
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
-  cors: { origin: "*" },
+  cors: {
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+      else callback(new Error("CORS not allowed"));
+    },
+  },
 });
 
 const rooms = new Map<string, Room>();
@@ -72,7 +87,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.WS_PORT ? parseInt(process.env.WS_PORT) : 3001;
-httpServer.listen(PORT, () => {
+const PORT = parseInt(process.env.PORT ?? process.env.WS_PORT ?? "3001", 10);
+httpServer.listen(PORT, "0.0.0.0", () => {
   console.log(`🐥 WebSocket server running on port ${PORT}`);
 });

@@ -29,6 +29,12 @@ export default function StopPage() {
   useEffect(() => { answersRef.current = answers; }, [answers]);
 
   useEffect(() => {
+    const errorHandler = () => router.push("/");
+    socket.on("error", errorHandler);
+    return () => { socket.off("error", errorHandler); };
+  }, [socket, router]);
+
+  useEffect(() => {
     const handler = (event: GameEvent) => {
       const { type, payload, _from } = event;
 

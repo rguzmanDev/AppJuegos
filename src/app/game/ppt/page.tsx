@@ -43,6 +43,12 @@ export default function PPTPage() {
   const [theyRequested, setTheyRequested] = useState(false);
 
   useEffect(() => {
+    const errorHandler = () => router.push("/");
+    socket.on("error", errorHandler);
+    return () => { socket.off("error", errorHandler); };
+  }, [socket, router]);
+
+  useEffect(() => {
     const handler = (event: GameEvent) => {
       const { type, payload, _from } = event;
 

@@ -1,8 +1,16 @@
+# fly.toml app configuration file generated for appjuegos-ws on 2026-06-23T17:14:11Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
 app = 'appjuegos-ws'
-primary_region = 'mia'
+primary_region = 'iad'
 
 [build]
   dockerfile = 'Dockerfile.ws'
+
+[env]
+  CORS_ORIGIN = 'https://appjuegos.fly.dev,https://cuddle.rgcore.dev'
 
 [http_service]
   internal_port = 3001
@@ -13,9 +21,6 @@ primary_region = 'mia'
   processes = ['app']
 
 [[vm]]
-  memory_mb = 256
   cpu_kind = 'shared'
   cpus = 1
-
-[env]
-  CORS_ORIGIN = 'https://appjuegos.fly.dev,https://cuddle.rgcore.dev'
+  memory_mb = 256

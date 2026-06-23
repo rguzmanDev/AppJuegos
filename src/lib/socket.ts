@@ -7,15 +7,21 @@ const HOST_WS_URLS: Record<string, string> = {
 };
 
 function resolveWsUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_WS_URL;
-  if (fromEnv) return fromEnv;
-
   if (typeof window !== "undefined") {
-    const mapped = HOST_WS_URLS[window.location.hostname];
+    const hostname = window.location.hostname;
+
+    const mapped = HOST_WS_URLS[hostname];
     if (mapped) return mapped;
+
+    // On a deployed site, ignore a build-time localhost URL
+    if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+      const fromEnv = process.env.NEXT_PUBLIC_WS_URL;
+      if (fromEnv && !fromEnv.includes("localhost")) return fromEnv;
+      if (hostname.endsWith(".fly.dev")) return "https://appjuegos-ws.fly.dev";
+    }
   }
 
-  return "http://localhost:3001";
+  return process.env.NEXT_PUBLIC_WS_URL ?? "http://localhost:3001";
 }
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;

@@ -162,7 +162,7 @@ export default function PPTPage() {
 
   if (phase === "config") {
     if (!isHost) return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <GameTitle gameId="ppt" title="Piedra Papel Tijera" />
         <p className="text-sm text-muted mb-4 mt-2">Partida: {code}</p>
         <p className="text-muted animate-pulse">Esperando configuración del anfitrión...</p>
@@ -170,7 +170,7 @@ export default function PPTPage() {
       </main>
     );
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <GameTitle gameId="ppt" title="Piedra Papel Tijera" />
         <p className="text-sm text-muted mb-8 mt-2">Partida: {code}</p>
         <p className="font-medium mb-4">¿Cuántas rondas?</p>
@@ -189,7 +189,7 @@ export default function PPTPage() {
 
   if (gameOver) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <GameTitle gameId="ppt" title="Piedra Papel Tijera" />
         <p className="text-3xl font-bold mb-2 mt-4 flex items-center justify-center gap-2">
           <TrophyIcon size={32} />
@@ -202,7 +202,7 @@ export default function PPTPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+    <main className="app-main flex flex-col items-center justify-center p-6 text-center">
       <div className="flex w-full max-w-sm justify-between items-center mb-6">
         <GameNavLink className="btn-ghost text-sm py-1 px-2">Inicio</GameNavLink>
         <span className="text-sm text-muted">Ronda {round}/{maxRounds}</span>

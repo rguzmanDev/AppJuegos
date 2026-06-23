@@ -7,7 +7,7 @@ import { GameList, GameRow } from "@/components/ui/GameRow";
 
 export function HomeContent() {
   return (
-    <main className="min-h-screen flex flex-col items-center px-5 py-10 sm:py-14">
+    <main className="app-main flex flex-col items-center justify-center px-5 py-6 sm:py-8">
       <header className="text-center mb-10 w-full max-w-md">
         <CoupleMascots size={56} className="mb-4 justify-center" />
         <h1 className="font-display text-[2.75rem] leading-tight font-bold tracking-tight">

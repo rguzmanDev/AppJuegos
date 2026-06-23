@@ -192,7 +192,7 @@ export default function AhorcadoPage() {
 
   if (phase === "config") {
     if (!isHost) return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <GameTitle gameId="ahorcado" title="Ahorcado" />
         <p className="text-sm text-muted mb-4 mt-2">Partida: {code}</p>
         <p className="text-muted animate-pulse">Esperando configuración del anfitrión...</p>
@@ -200,7 +200,7 @@ export default function AhorcadoPage() {
       </main>
     );
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <GameTitle gameId="ahorcado" title="Ahorcado" />
         <p className="text-sm text-muted mb-6 mt-2">Partida: {code}</p>
         <ConfigPicker oppName={oppName} onStart={startGame} />
@@ -212,7 +212,7 @@ export default function AhorcadoPage() {
   if (gameOver) {
     const winner = myScore > oppScore ? myName : myScore < oppScore ? oppName : null;
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-4">Fin del juego</h2>
         <p className="text-3xl font-bold mb-2">{winner ? `${winner} gana!` : "Empate!"}</p>
         <Scores />
@@ -229,7 +229,7 @@ export default function AhorcadoPage() {
 
   if (phase === "wordentry") {
     if (isGuesser) return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <Header />
         <Scores />
         <p className="text-lg font-medium mb-2">Ronda {round}</p>
@@ -237,7 +237,7 @@ export default function AhorcadoPage() {
       </main>
     );
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <Header />
         <Scores />
         <p className="text-lg font-medium mb-1">Ronda {round} — Tu turno de elegir</p>
@@ -260,7 +260,7 @@ export default function AhorcadoPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center p-6">
+    <main className="app-main flex flex-col items-center p-6">
       <Header />
       <Scores />
 

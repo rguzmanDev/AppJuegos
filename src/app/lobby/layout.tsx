@@ -1,5 +1,11 @@
 import { Suspense } from "react";
+import { NapSplash } from "@/components/NapSplash";
+import { SocketWakeGuard } from "@/components/SocketWakeGuard";
 
 export default function LobbyLayout({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Cargando...</div>}>{children}</Suspense>;
+  return (
+    <SocketWakeGuard>
+      <Suspense fallback={<NapSplash variant="overlay" />}>{children}</Suspense>
+    </SocketWakeGuard>
+  );
 }

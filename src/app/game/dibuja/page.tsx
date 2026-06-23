@@ -347,7 +347,7 @@ export default function DibujaPage() {
 
   if (phase === "config") {
     if (!isHost) return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
           <GameIcon gameId="dibuja" size={24} className="text-[var(--color-accent)]" />
           Dibuja y Adivina
@@ -358,7 +358,7 @@ export default function DibujaPage() {
       </main>
     );
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
           <GameIcon gameId="dibuja" size={24} className="text-[var(--color-accent)]" />
           Dibuja y Adivina
@@ -373,7 +373,7 @@ export default function DibujaPage() {
   if (gameOver) {
     const winner = myScore > oppScore ? myName : myScore < oppScore ? oppName : null;
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-4">Fin del juego</h2>
         <p className="text-3xl font-bold mb-2">{winner ? `${winner} gana!` : "Empate!"}</p>
         <ScoreBar />
@@ -390,7 +390,7 @@ export default function DibujaPage() {
 
   if (phase === "wordentry") {
     if (!isDrawer) return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <HeaderBar />
         <ScoreBar />
         <p className="text-lg font-medium mb-2">Ronda {round}</p>
@@ -398,7 +398,7 @@ export default function DibujaPage() {
       </main>
     );
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <HeaderBar />
         <ScoreBar />
         <p className="text-lg font-medium mb-1">Ronda {round} — Tu turno de dibujar</p>
@@ -425,7 +425,7 @@ export default function DibujaPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center p-4">
+    <main className="app-main flex flex-col items-center p-4">
       <HeaderBar />
       <ScoreBar />
 

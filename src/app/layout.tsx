@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
+import { AppShell } from "@/components/AppShell";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
@@ -20,6 +21,12 @@ export const metadata: Metadata = {
   description: "Solo tú y yo",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -27,8 +34,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={`${dmSans.variable} ${fraunces.variable}`}>
-      <body className="antialiased min-h-screen flex flex-col">
-        <div className="flex-1">{children}</div>
+      <body className="antialiased flex flex-col min-h-dvh">
+        <AppShell>{children}</AppShell>
         <SiteFooter />
       </body>
     </html>

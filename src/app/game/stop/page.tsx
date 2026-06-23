@@ -303,7 +303,7 @@ export default function StopPage() {
 
   if (phase === "config") {
     if (!isHost) return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
           <GameIcon gameId="stop" size={24} className="text-[var(--color-accent)]" />
           Bachillerato / Stop
@@ -314,7 +314,7 @@ export default function StopPage() {
       </main>
     );
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
           <GameIcon gameId="stop" size={24} className="text-[var(--color-accent)]" />
           Bachillerato / Stop
@@ -350,7 +350,7 @@ export default function StopPage() {
   if (gameOver) {
     const winner = myScore > oppScore ? myName : myScore < oppScore ? oppName : null;
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-4 flex items-center justify-center gap-2">
           <GameIcon gameId="stop" size={24} className="text-[var(--color-accent)]" />
           Fin del juego
@@ -379,7 +379,7 @@ export default function StopPage() {
 
   if (phase === "waiting") {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <main className="app-main flex flex-col items-center justify-center p-6 text-center">
         <HeaderBar />
         <ScoreBar />
         {isHost ? (
@@ -397,7 +397,7 @@ export default function StopPage() {
 
   if (phase === "playing") {
     return (
-      <main className="min-h-screen flex flex-col items-center p-6">
+      <main className="app-main flex flex-col items-center p-6">
         <HeaderBar />
         <div className="flex items-center gap-4 mb-4">
           <div className="text-6xl font-bold text-[var(--color-accent)]">{letter}</div>
@@ -445,7 +445,7 @@ export default function StopPage() {
 
   if (phase === "reviewing") {
     return (
-      <main className="min-h-screen flex flex-col items-center p-6">
+      <main className="app-main flex flex-col items-center p-6">
         <HeaderBar />
         <p className="text-lg font-bold mb-1">Letra: {letter} — Revisión</p>
         <p className="text-sm opacity-60 mb-4 text-center max-w-md">
@@ -521,7 +521,7 @@ export default function StopPage() {
 
   // scoring
   return (
-    <main className="min-h-screen flex flex-col items-center p-6">
+    <main className="app-main flex flex-col items-center p-6">
       <HeaderBar />
       <p className="text-lg font-bold mb-1">Letra: {letter}</p>
       <ScoreBar />

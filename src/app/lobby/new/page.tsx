@@ -59,7 +59,7 @@ export default function NewLobbyPage() {
         : "";
 
     return (
-      <main className="min-h-screen flex flex-col items-center px-5 py-10">
+      <main className="app-main flex flex-col items-center px-5 py-10">
         <div className="w-full max-w-md text-center">
           <GameTitle gameId={room.gameId} title={getGameMeta(room.gameId).name} iconSize={28} />
           <p className="text-muted mt-2 mb-8 text-sm">Comparte el código con tu pareja</p>
@@ -100,7 +100,7 @@ export default function NewLobbyPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-5 py-10">
+    <main className="app-main flex flex-col items-center justify-center px-5 py-10">
       <div className="w-full max-w-xs text-center">
         <GameTitle gameId={gameId} title={gameMeta.name} iconSize={28} />
         <p className="text-muted mt-2 mb-8 text-sm">Nueva partida</p>

@@ -49,7 +49,7 @@ export default function JoinLobbyPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-5 py-10">
+    <main className="app-main flex flex-col items-center justify-center px-5 py-10">
       <div className="w-full max-w-xs">
         <div className="text-center mb-8">
           <CoupleMascots size={48} className="mb-3 justify-center" />

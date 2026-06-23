@@ -4,7 +4,7 @@ import { TrophyIcon } from "@/components/icons/GameIcons";
 
 export default function ScoresPage() {
   return (
-    <main className="min-h-screen px-5 py-10 max-w-lg mx-auto">
+    <main className="app-main px-5 py-10 max-w-lg mx-auto">
       <header className="mb-10">
         <h1 className="font-display text-3xl font-bold flex items-center gap-2">
           <TrophyIcon size={28} />

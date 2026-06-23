@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSocket } from "@/lib/socket";
 import { saveRoomToSession } from "@/lib/useRoom";
+import { filterPlainText, isPlainTextValid } from "@/lib/validation";
 import type { Room } from "@/lib/types";
 
 export default function JoinLobbyPage() {
@@ -38,7 +39,7 @@ export default function JoinLobbyPage() {
   }, [router]);
 
   function join() {
-    if (!nickname.trim() || !code.trim()) return;
+    if (!isPlainTextValid(nickname) || !code.trim()) return;
     const socket = getSocket();
     socket.emit("room:join", { code: code.trim().toUpperCase(), nickname: nickname.trim() });
   }
@@ -59,17 +60,17 @@ export default function JoinLobbyPage() {
         />
         <input
           type="text"
-          placeholder="Tu nickname 🐥"
+          placeholder="Tu nickname"
           value={nickname}
           maxLength={20}
-          onChange={(e) => setNickname(e.target.value)}
+          onChange={(e) => setNickname(filterPlainText(e.target.value))}
           onKeyDown={(e) => e.key === "Enter" && join()}
           className="border-2 border-pink-200 rounded-xl px-4 py-3 text-center text-lg outline-none focus:border-pink-400"
         />
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <button
           onClick={join}
-          disabled={!nickname.trim() || !code.trim()}
+          disabled={!isPlainTextValid(nickname) || !code.trim()}
           className="bg-pink-400 hover:bg-pink-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-colors"
         >
           Unirse

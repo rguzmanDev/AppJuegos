@@ -98,5 +98,5 @@ io.on("connection", (socket) => {
 
 const PORT = parseInt(process.env.PORT ?? process.env.WS_PORT ?? "3001", 10);
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`🐥 WebSocket server running on port ${PORT}`);
+  console.log(`WebSocket server running on port ${PORT}`);
 });

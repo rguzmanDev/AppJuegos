@@ -1,14 +1,19 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { Frown, Meh, Skull, Smile, Star } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { GameNavLink, LobbyExitLink } from "@/components/GameNavLink";
+import { GameIcon } from "@/components/GameIcon";
+import { LetterKeyboard } from "@/components/LetterKeyboard";
+import { RematchPanel, useRematch } from "@/components/RematchPanel";
 import { useRoom } from "@/lib/useRoom";
+import { filterWordText, isWordValid } from "@/lib/validation";
 import type { GameEvent } from "@/lib/types";
 
 const MAX_ERRORS = 6;
-const FACES = ["😢", "😱", "😨", "😰", "😵", "💀", "⭐"];
-const LETTERS = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
+const FACES: LucideIcon[] = [Smile, Meh, Frown, Frown, Skull, Skull, Star];
 
 export default function AhorcadoPage() {
   const params = useSearchParams();
@@ -17,7 +22,6 @@ export default function AhorcadoPage() {
   const { me, opponent, socket, amHostRef } = useRoom();
   const isHost = me?.isHost ?? false;
 
-  // Refs for stale-closure-safe access inside event handlers
   const isGuesserRef = useRef(false);
   const firstGuesserIsHostRef = useRef(false);
   const roundRef = useRef(1);
@@ -31,15 +35,22 @@ export default function AhorcadoPage() {
   const [round, setRound] = useState(1);
   const [maxRounds, setMaxRounds] = useState(4);
   const [phase, setPhase] = useState<"config" | "wordentry" | "playing" | "won" | "lost">("config");
-  const [iRequested, setIRequested] = useState(false);
-  const [theyRequested, setTheyRequested] = useState(false);
 
-  // Compute whether I am the guesser in a given round
   function calcIsGuesser(r: number): boolean {
-    // Round 1: firstGuesserIsHost player guesses. Alternates each round.
     const guesserIsHost = firstGuesserIsHostRef.current === (r % 2 === 1);
     return amHostRef.current === guesserIsHost;
   }
+
+  const resetRematch = useCallback(() => {
+    setMyScore(0);
+    setOppScore(0);
+    setRound(1);
+    roundRef.current = 1;
+    setWord("");
+    setWordInput("");
+    setGuessed([]);
+    setPhase("config");
+  }, []);
 
   useEffect(() => {
     const errorHandler = () => router.push("/");
@@ -49,7 +60,7 @@ export default function AhorcadoPage() {
 
   useEffect(() => {
     const handler = (event: GameEvent & { _from?: string }) => {
-      const { type, payload, _from } = event;
+      const { type, payload } = event;
 
       if (type === "ahorcado:config") {
         const p = payload as { maxRounds: number; firstGuesserIsHost: boolean };
@@ -74,7 +85,7 @@ export default function AhorcadoPage() {
 
       if (type === "ahorcado:letter") {
         const p = payload as { letter: string };
-        setGuessed(prev => prev.includes(p.letter) ? prev : [...prev, p.letter]);
+        setGuessed((prev) => prev.includes(p.letter) ? prev : [...prev, p.letter]);
       }
 
       if (type === "ahorcado:next") {
@@ -91,35 +102,24 @@ export default function AhorcadoPage() {
       }
 
       if (type === "game:end") router.push("/");
-
-      if (type === "game:rematch") {
-        const p = payload as { action: string };
-        if (p.action === "request" && _from !== socket.id) setTheyRequested(true);
-        if (p.action === "accept") {
-          setIRequested(false); setTheyRequested(false);
-          setMyScore(0); setOppScore(0);
-          setRound(1); roundRef.current = 1;
-          setWord(""); setWordInput(""); setGuessed([]);
-          setPhase("config");
-        }
-      }
     };
 
     socket.on("game:event", handler);
     return () => { socket.off("game:event", handler); };
   }, [socket, router, amHostRef]);
 
-  // Score updates when round ends
   useEffect(() => {
     if (phase !== "playing" || !word) return;
-    const errors = guessed.filter(l => !word.includes(l)).length;
-    const won = word.split("").every(l => guessed.includes(l));
+    const errors = guessed.filter((l) => !word.includes(l)).length;
+    const won = word.split("").every((l) => guessed.includes(l));
     const lost = errors >= MAX_ERRORS;
     if (won) {
-      if (isGuesser) setMyScore(s => s + 1); else setOppScore(s => s + 1);
+      if (isGuesser) setMyScore((s) => s + 1);
+      else setOppScore((s) => s + 1);
       setPhase("won");
     } else if (lost) {
-      if (!isGuesser) setMyScore(s => s + 1); else setOppScore(s => s + 1);
+      if (!isGuesser) setMyScore((s) => s + 1);
+      else setOppScore((s) => s + 1);
       setPhase("lost");
     }
   }, [guessed, phase, word, isGuesser]);
@@ -133,8 +133,8 @@ export default function AhorcadoPage() {
   }
 
   function submitWord() {
-    const w = wordInput.trim().toUpperCase();
-    if (!w) return;
+    const w = filterWordText(wordInput);
+    if (!isWordValid(w)) return;
     socket.emit("game:action", { type: "ahorcado:word", payload: { word: w } });
   }
 
@@ -152,25 +152,26 @@ export default function AhorcadoPage() {
     router.push("/");
   }
 
-  function requestRematch() {
-    setIRequested(true);
-    socket.emit("game:action", { type: "game:rematch", payload: { action: "request" } });
-  }
-
-  function acceptRematch() {
-    socket.emit("game:action", { type: "game:rematch", payload: { action: "accept" } });
-  }
-
   const myName = me?.nickname ?? "Yo";
   const oppName = opponent?.nickname ?? "Ellos";
-  const errors = guessed.filter(l => word && !word.includes(l)).length;
-  const wordWon = word && word.split("").every(l => guessed.includes(l));
-  const wordLost = errors >= MAX_ERRORS;
+  const errors = guessed.filter((l) => word && !word.includes(l)).length;
   const gameOver = round > maxRounds;
+  const FaceIcon = FACES[Math.min(errors, 6)];
+
+  const iWon = myScore > oppScore;
+  const isTie = myScore === oppScore;
+  const rematch = useRematch({
+    socket,
+    isLoser: !iWon && !isTie,
+    isWinner: iWon,
+    isTie,
+    enabled: gameOver,
+    onAccept: resetRematch,
+  });
 
   const Header = () => (
     <div className="flex w-full max-w-sm justify-between items-center mb-4">
-      <Link href="/" className="text-sm opacity-40 hover:opacity-70">← Inicio</Link>
+      <GameNavLink className="text-sm opacity-40 hover:opacity-70">← Inicio</GameNavLink>
       <span className="text-sm font-medium opacity-60">Ahorcado · R {round}/{maxRounds}</span>
       <button onClick={endGame} className="text-sm opacity-40 hover:opacity-70">Salir</button>
     </div>
@@ -190,62 +191,49 @@ export default function AhorcadoPage() {
     </div>
   );
 
-  // ── CONFIG ──
   if (phase === "config") {
     if (!isHost) return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-1">Ahorcado</h2>
+        <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
+          <GameIcon gameId="ahorcado" size={24} className="text-pink-500" />
+          Ahorcado
+        </h2>
         <p className="text-sm opacity-50 mb-4">Partida: {code}</p>
         <p className="animate-pulse opacity-60">Esperando configuración del anfitrión...</p>
-        <Link href="/" className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</Link>
+        <LobbyExitLink className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</LobbyExitLink>
       </main>
     );
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-1">Ahorcado</h2>
+        <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
+          <GameIcon gameId="ahorcado" size={24} className="text-pink-500" />
+          Ahorcado
+        </h2>
         <p className="text-sm opacity-50 mb-6">Partida: {code}</p>
-        <ConfigPicker
-          oppName={oppName}
-          myName={myName}
-          amHost={true}
-          onStart={startGame}
-        />
-        <Link href="/" className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</Link>
+        <ConfigPicker oppName={oppName} onStart={startGame} />
+        <LobbyExitLink className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</LobbyExitLink>
       </main>
     );
   }
 
-  // ── GAME OVER ──
   if (gameOver) {
     const winner = myScore > oppScore ? myName : myScore < oppScore ? oppName : null;
-    const iWon = myScore > oppScore;
-    const isTie = myScore === oppScore;
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-4">Fin del juego</h2>
-        <p className="text-3xl font-bold mb-2">{winner ? `${winner} gana!` : "¡Empate!"}</p>
+        <p className="text-3xl font-bold mb-2">{winner ? `${winner} gana!` : "Empate!"}</p>
         <Scores />
-        <div className="flex flex-col items-center gap-3 mt-4">
-          {theyRequested && !iRequested ? (
-            <button onClick={acceptRematch} className="bg-green-400 text-white font-bold py-3 px-8 rounded-xl hover:bg-green-500">
-              ¡{oppName} quiere revancha! Aceptar
-            </button>
-          ) : iRequested ? (
-            <p className="text-sm animate-pulse opacity-50">Esperando respuesta de {oppName}...</p>
-          ) : (!iWon || isTie) ? (
-            <button onClick={requestRematch} className="bg-pink-400 text-white font-bold py-3 px-8 rounded-xl hover:bg-pink-500">
-              Pedir revancha
-            </button>
-          ) : (
-            <p className="text-sm opacity-40">Espera a que {oppName} pida revancha...</p>
-          )}
-          <Link href="/" className="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl hover:bg-gray-300">Inicio</Link>
-        </div>
+        <RematchPanel
+          oppName={oppName}
+          isWinner={iWon}
+          isLoser={!iWon && !isTie}
+          isTie={isTie}
+          rematch={rematch}
+        />
       </main>
     );
   }
 
-  // ── WORD ENTRY ──
   if (phase === "wordentry") {
     if (isGuesser) return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
@@ -264,8 +252,8 @@ export default function AhorcadoPage() {
         <input
           type="text"
           value={wordInput}
-          onChange={e => setWordInput(e.target.value.toUpperCase())}
-          onKeyDown={e => e.key === "Enter" && submitWord()}
+          onChange={(e) => setWordInput(filterWordText(e.target.value))}
+          onKeyDown={(e) => e.key === "Enter" && submitWord()}
           placeholder="Escribe la palabra secreta"
           maxLength={20}
           className="border-2 border-pink-300 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-widest outline-none focus:border-pink-500 uppercase mb-4 w-full max-w-xs"
@@ -273,22 +261,23 @@ export default function AhorcadoPage() {
         />
         <button
           onClick={submitWord}
-          disabled={!wordInput.trim()}
+          disabled={!isWordValid(wordInput)}
           className="bg-pink-400 hover:bg-pink-500 disabled:opacity-40 text-white font-bold py-3 px-8 rounded-xl"
         >
-          ¡Listo! Que adivine →
+          Listo! Que adivine →
         </button>
       </main>
     );
   }
 
-  // ── PLAYING ──
   return (
     <main className="min-h-screen flex flex-col items-center p-6">
       <Header />
       <Scores />
 
-      <div className="text-6xl mb-2">{FACES[Math.min(errors, 6)]}</div>
+      <div className="mb-2 text-pink-500">
+        <FaceIcon size={64} aria-hidden />
+      </div>
       <p className="text-sm opacity-40 mb-4">Errores: {errors}/{MAX_ERRORS}</p>
 
       <p className="text-sm mb-3 font-medium">
@@ -301,7 +290,6 @@ export default function AhorcadoPage() {
         </div>
       )}
 
-      {/* Word display */}
       <div className="flex gap-2 flex-wrap justify-center text-3xl font-mono mb-6">
         {word.split("").map((l, i) => (
           <span key={i} className="border-b-2 border-gray-400 min-w-[1.5rem] text-center">
@@ -313,7 +301,7 @@ export default function AhorcadoPage() {
       {phase === "won" && (
         <div className="text-center mb-4">
           <p className="text-2xl font-bold text-green-600 mb-3">
-            {isGuesser ? "¡Adivinaste!" : `${oppName} adivinó`}
+            {isGuesser ? "Adivinaste!" : `${oppName} adivinó`}
           </p>
           {isHost ? (
             <button onClick={nextRound} className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl">
@@ -328,7 +316,7 @@ export default function AhorcadoPage() {
       {phase === "lost" && (
         <div className="text-center mb-4">
           <p className="text-2xl font-bold text-red-500 mb-1">
-            {isGuesser ? "¡Se acabaron los intentos! 💀" : "¡No adivinó!"}
+            {isGuesser ? "Se acabaron los intentos!" : "No adivinó!"}
           </p>
           <p className="opacity-60 mb-3">La palabra era: <strong>{word}</strong></p>
           {isHost ? (
@@ -341,20 +329,8 @@ export default function AhorcadoPage() {
         </div>
       )}
 
-      {/* Keyboard — only for guesser */}
       {phase === "playing" && isGuesser && (
-        <div className="flex flex-wrap justify-center gap-2 max-w-sm">
-          {LETTERS.map(l => (
-            <button key={l} onClick={() => guessLetter(l)} disabled={guessed.includes(l)}
-              className={`w-9 h-9 rounded-lg font-bold text-sm transition-all ${
-                guessed.includes(l)
-                  ? word.includes(l) ? "bg-green-200 text-green-700" : "bg-gray-200 text-gray-400"
-                  : "bg-pink-100 hover:bg-pink-300 border border-pink-200"
-              }`}>
-              {l}
-            </button>
-          ))}
-        </div>
+        <LetterKeyboard guessed={guessed} word={word} onLetter={guessLetter} />
       )}
 
       {phase === "playing" && !isGuesser && (
@@ -364,16 +340,11 @@ export default function AhorcadoPage() {
   );
 }
 
-// ── Config picker sub-component ──
 function ConfigPicker({
   oppName,
-  myName,
-  amHost,
   onStart,
 }: {
   oppName: string;
-  myName: string;
-  amHost: boolean;
   onStart: (rounds: number, firstGuesserIsHost: boolean) => void;
 }) {
   const [rounds, setRounds] = useState<number | null>(null);
@@ -383,7 +354,7 @@ function ConfigPicker({
       <div className="flex flex-col items-center gap-4">
         <p className="font-medium">¿Cuántas rondas?</p>
         <div className="flex gap-3">
-          {[4, 6, 8].map(n => (
+          {[4, 6, 8].map((n) => (
             <button key={n} onClick={() => setRounds(n)}
               className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-xl text-lg">
               {n}

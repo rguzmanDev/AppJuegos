@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { Dices, Hand, Trophy } from "lucide-react";
+import { GameNavLink, LobbyExitLink } from "@/components/GameNavLink";
+import { GameIcon } from "@/components/GameIcon";
+import { RematchPanel, useRematch } from "@/components/RematchPanel";
 import { useRoom } from "@/lib/useRoom";
+import { filterPlainText } from "@/lib/validation";
 import type { GameEvent } from "@/lib/types";
 
 const CATEGORIES = ["Nombre", "Animal", "Fruta/Verdura", "País", "Color", "Cosa"];
@@ -52,17 +56,20 @@ export default function StopPage() {
   const [timeLimit, setTimeLimit] = useState(60);
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
-  const [iRequested, setIRequested] = useState(false);
-  const [theyRequested, setTheyRequested] = useState(false);
 
-  // Refs to avoid stale closures in timer callbacks and event handlers
   const answersRef = useRef<Answers>({});
   const submittedRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Keep answersRef in sync with state
   useEffect(() => { answersRef.current = answers; }, [answers]);
+
+  const resetRematch = useCallback(() => {
+    setMyScore(0);
+    setOppScore(0);
+    setRound(1);
+    setPhase("config");
+  }, []);
 
   useEffect(() => {
     const errorHandler = () => router.push("/");
@@ -92,10 +99,9 @@ export default function StopPage() {
         setPhase("playing");
         setTimeLeft(p.timeLimit);
 
-        // Start countdown
         if (tickRef.current) clearInterval(tickRef.current);
         tickRef.current = setInterval(() => {
-          setTimeLeft(t => {
+          setTimeLeft((t) => {
             if (t <= 1) {
               if (tickRef.current) clearInterval(tickRef.current);
               return 0;
@@ -104,7 +110,6 @@ export default function StopPage() {
           });
         }, 1000);
 
-        // Auto-submit on timer expiry
         if (timerRef.current) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => {
           doSubmit();
@@ -112,46 +117,23 @@ export default function StopPage() {
       }
 
       if (type === "stop:submit") {
-        // Receive opponent's answers (or my own confirmed submission)
         const p = payload as { answers: Answers };
         if (_from !== socket.id) {
-          // Opponent submitted
-          setBothAnswers(prev => ({
+          setBothAnswers((prev) => ({
             mine: prev?.mine ?? {},
             theirs: p.answers,
           }));
         }
       }
 
-      if (type === "stop:reveal") {
-        // Both submitted - show scoring
-        const p = payload as { submitter1: Answers; submitter2Answers: Answers; _from1: string };
-        // just use bothAnswers state
-        if (tickRef.current) clearInterval(tickRef.current);
-        if (timerRef.current) clearTimeout(timerRef.current);
-        setPhase("scoring");
-      }
-
       if (type === "stop:next") {
         setPhase("waiting");
-        setRound(r => r + 1);
+        setRound((r) => r + 1);
         setBothAnswers(null);
       }
 
       if (type === "game:end") {
         router.push("/");
-      }
-
-      if (type === "game:rematch") {
-        const p = payload as { action: string };
-        if (p.action === "request" && _from !== socket.id) {
-          setTheyRequested(true);
-        }
-        if (p.action === "accept") {
-          setIRequested(false); setTheyRequested(false);
-          setMyScore(0); setOppScore(0); setRound(1);
-          setPhase("config");
-        }
       }
     };
 
@@ -163,14 +145,13 @@ export default function StopPage() {
     };
   }, [socket, router]);
 
-  // Watch bothAnswers to trigger scoring when opponent's arrives
   useEffect(() => {
     if (bothAnswers?.mine && bothAnswers?.theirs && phase === "playing") {
       if (tickRef.current) clearInterval(tickRef.current);
       if (timerRef.current) clearTimeout(timerRef.current);
       const { myPts, oppPts } = calcScore(bothAnswers.mine, bothAnswers.theirs);
-      setMyScore(s => s + myPts);
-      setOppScore(s => s + oppPts);
+      setMyScore((s) => s + myPts);
+      setOppScore((s) => s + oppPts);
       setPhase("scoring");
     }
   }, [bothAnswers, phase]);
@@ -196,14 +177,13 @@ export default function StopPage() {
     setSubmitted(true);
     if (tickRef.current) clearInterval(tickRef.current);
     if (timerRef.current) clearTimeout(timerRef.current);
-    const myAnswers = answersRef.current; // always fresh via ref!
-    // Store my answers locally
-    setBothAnswers(prev => ({ mine: myAnswers, theirs: prev?.theirs ?? {} }));
+    const myAnswers = answersRef.current;
+    setBothAnswers((prev) => ({ mine: myAnswers, theirs: prev?.theirs ?? {} }));
     socket.emit("game:action", { type: "stop:submit", payload: { answers: myAnswers } });
   }
 
   function updateAnswer(cat: string, val: string) {
-    const next = { ...answersRef.current, [cat]: val };
+    const next = { ...answersRef.current, [cat]: filterPlainText(val) };
     answersRef.current = next;
     setAnswers(next);
   }
@@ -217,23 +197,28 @@ export default function StopPage() {
     router.push("/");
   }
 
-  function requestRematch() {
-    setIRequested(true);
-    socket.emit("game:action", { type: "game:rematch", payload: { action: "request" } });
-  }
-
-  function acceptRematch() {
-    socket.emit("game:action", { type: "game:rematch", payload: { action: "accept" } });
-  }
-
   const myName = me?.nickname ?? "Yo";
   const oppName = opponent?.nickname ?? "Ellos";
   const gameOver = round > maxRounds;
+  const iWon = myScore > oppScore;
+  const isTie = myScore === oppScore;
+
+  const rematch = useRematch({
+    socket,
+    isLoser: !iWon && !isTie,
+    isWinner: iWon,
+    isTie,
+    enabled: gameOver,
+    onAccept: resetRematch,
+  });
 
   const HeaderBar = () => (
     <div className="flex w-full max-w-md justify-between items-center mb-4">
-      <Link href="/" className="text-sm opacity-40 hover:opacity-70">← Inicio</Link>
-      <span className="text-sm font-medium opacity-60">🐣 Stop · R {round}/{maxRounds}</span>
+      <GameNavLink className="text-sm opacity-40 hover:opacity-70">← Inicio</GameNavLink>
+      <span className="text-sm font-medium opacity-60 flex items-center gap-1">
+        <GameIcon gameId="stop" size={14} className="text-pink-500" />
+        Stop · R {round}/{maxRounds}
+      </span>
       <button onClick={endGame} className="text-sm opacity-40 hover:opacity-70">Salir</button>
     </div>
   );
@@ -255,19 +240,25 @@ export default function StopPage() {
   if (phase === "config") {
     if (!isHost) return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-1">🐣 Bachillerato / Stop</h2>
+        <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
+          <GameIcon gameId="stop" size={24} className="text-pink-500" />
+          Bachillerato / Stop
+        </h2>
         <p className="text-sm opacity-50 mb-4">Partida: {code}</p>
         <p className="animate-pulse opacity-60">Esperando configuración del anfitrión...</p>
-        <Link href="/" className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</Link>
+        <LobbyExitLink className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</LobbyExitLink>
       </main>
     );
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-1">🐣 Bachillerato / Stop</h2>
+        <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
+          <GameIcon gameId="stop" size={24} className="text-pink-500" />
+          Bachillerato / Stop
+        </h2>
         <p className="text-sm opacity-50 mb-8">Partida: {code}</p>
         <p className="font-medium mb-4">¿Cuántas rondas?</p>
         <div className="flex gap-3 mb-6">
-          {[4, 6, 8].map(n => (
+          {[4, 6, 8].map((n) => (
             <button key={n} onClick={() => setMaxRounds(n)}
               className={`font-bold py-3 px-6 rounded-xl text-lg border-2 transition-all ${
                 maxRounds === n ? "bg-pink-400 text-white border-pink-400" : "border-gray-200 hover:border-pink-300"
@@ -276,7 +267,7 @@ export default function StopPage() {
         </div>
         <p className="font-medium mb-4">Tiempo por ronda:</p>
         <div className="flex gap-3 mb-8">
-          {[30, 60, 90].map(s => (
+          {[30, 60, 90].map((s) => (
             <button key={s} onClick={() => setTimeLimit(s)}
               className={`font-bold py-3 px-6 rounded-xl text-lg border-2 transition-all ${
                 timeLimit === s ? "bg-pink-400 text-white border-pink-400" : "border-gray-200 hover:border-pink-300"
@@ -285,42 +276,39 @@ export default function StopPage() {
         </div>
         <button onClick={() => configGame(maxRounds, timeLimit)}
           className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl">
-          ¡Listo!
+          Listo!
         </button>
-        <Link href="/" className="mt-6 text-sm opacity-40 hover:opacity-70 underline">← Salir</Link>
+        <LobbyExitLink className="mt-6 text-sm opacity-40 hover:opacity-70 underline">← Salir</LobbyExitLink>
       </main>
     );
   }
 
   if (gameOver) {
     const winner = myScore > oppScore ? myName : myScore < oppScore ? oppName : null;
-    const iWon = myScore > oppScore;
-    const isTie = myScore === oppScore;
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-4">🐣 Fin del juego</h2>
-        <p className="text-3xl font-bold mb-2">
-          {winner ? `🎉 ${winner} gana!` : "¡Empate! 🤝"}
+        <h2 className="text-2xl font-bold mb-4 flex items-center justify-center gap-2">
+          <GameIcon gameId="stop" size={24} className="text-pink-500" />
+          Fin del juego
+        </h2>
+        <p className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
+          {winner ? (
+            <>
+              <Trophy className="text-yellow-500" size={32} aria-hidden />
+              {winner} gana!
+            </>
+          ) : (
+            "Empate!"
+          )}
         </p>
         <ScoreBar />
-        <div className="flex flex-col items-center gap-3 mt-2">
-          {theyRequested && !iRequested ? (
-            <button onClick={acceptRematch}
-              className="bg-green-400 text-white font-bold py-3 px-8 rounded-xl hover:bg-green-500">
-              🔥 ¡{oppName} quiere revancha! Aceptar
-            </button>
-          ) : iRequested ? (
-            <p className="text-sm animate-pulse opacity-50">Esperando respuesta de {oppName}...</p>
-          ) : (!iWon || isTie) ? (
-            <button onClick={requestRematch}
-              className="bg-pink-400 text-white font-bold py-3 px-8 rounded-xl hover:bg-pink-500">
-              Pedir revancha
-            </button>
-          ) : (
-            <p className="text-sm opacity-40">Espera a que {oppName} pida revancha...</p>
-          )}
-          <Link href="/" className="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl hover:bg-gray-300">Inicio</Link>
-        </div>
+        <RematchPanel
+          oppName={oppName}
+          isWinner={iWon}
+          isLoser={!iWon && !isTie}
+          isTie={isTie}
+          rematch={rematch}
+        />
       </main>
     );
   }
@@ -331,8 +319,9 @@ export default function StopPage() {
         <HeaderBar />
         <ScoreBar />
         <button onClick={startRound}
-          className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-4 px-10 rounded-xl text-xl">
-          🎲 Iniciar ronda
+          className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-4 px-10 rounded-xl text-xl flex items-center gap-2 mx-auto">
+          <Dices size={24} aria-hidden />
+          Iniciar ronda
         </button>
       </main>
     );
@@ -367,8 +356,9 @@ export default function StopPage() {
 
         {!submitted ? (
           <button onClick={doSubmit}
-            className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-10 rounded-xl text-lg">
-            ¡STOP! 🛑
+            className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-10 rounded-xl text-lg flex items-center gap-2">
+            <Hand size={20} aria-hidden />
+            STOP!
           </button>
         ) : (
           <p className="opacity-50 animate-pulse">Esperando a {oppName}...</p>
@@ -377,7 +367,6 @@ export default function StopPage() {
     );
   }
 
-  // Scoring phase
   const score = bothAnswers ? calcScore(bothAnswers.mine, bothAnswers.theirs) : null;
   return (
     <main className="min-h-screen flex flex-col items-center p-6">

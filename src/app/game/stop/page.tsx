@@ -2,40 +2,27 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Dices, Hand, Trophy } from "lucide-react";
+import { Check, Dices, Hand, Trophy } from "lucide-react";
 import { GameNavLink, LobbyExitLink } from "@/components/GameNavLink";
 import { GameIcon } from "@/components/GameIcon";
 import { RematchPanel, useRematch } from "@/components/RematchPanel";
 import { useRoom } from "@/lib/useRoom";
+import {
+  STOP_CATEGORIES,
+  calcStopScore,
+  getAnswerStatus,
+  pickNextLetter,
+  startsWithLetter,
+  type StopAnswers,
+} from "@/lib/stopScoring";
 import { filterPlainText } from "@/lib/validation";
 import type { GameEvent } from "@/lib/types";
 
-const CATEGORIES = ["Nombre", "Animal", "Fruta/Verdura", "País", "Color", "Cosa"];
-const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-function randomLetter() {
-  return LETTERS[Math.floor(Math.random() * LETTERS.length)];
-}
-
-type Answers = Record<string, string>;
-type BothAnswers = { mine: Answers; theirs: Answers };
-
-function calcScore(mine: Answers, theirs: Answers): { myPts: number; oppPts: number } {
-  let myPts = 0;
-  let oppPts = 0;
-  for (const cat of CATEGORIES) {
-    const m = (mine[cat] ?? "").trim().toLowerCase();
-    const t = (theirs[cat] ?? "").trim().toLowerCase();
-    if (!m && !t) continue;
-    if (m && t && m === t) {
-      myPts += 50;
-      oppPts += 50;
-    } else {
-      if (m) myPts += 100;
-      if (t) oppPts += 100;
-    }
-  }
-  return { myPts, oppPts };
+function answerCellClass(status: ReturnType<typeof getAnswerStatus>, tie: boolean): string {
+  if (status === "empty") return "text-gray-400";
+  if (tie) return "text-yellow-600";
+  if (status === "valid") return "text-green-600";
+  return "text-red-500 line-through";
 }
 
 export default function StopPage() {
@@ -45,10 +32,13 @@ export default function StopPage() {
   const { me, opponent, socket } = useRoom();
   const isHost = me?.isHost ?? false;
 
-  const [phase, setPhase] = useState<"config" | "waiting" | "playing" | "scoring">("config");
+  const [phase, setPhase] = useState<
+    "config" | "waiting" | "playing" | "reviewing" | "scoring"
+  >("config");
   const [letter, setLetter] = useState("");
-  const [answers, setAnswers] = useState<Answers>({});
-  const [bothAnswers, setBothAnswers] = useState<BothAnswers | null>(null);
+  const [answers, setAnswers] = useState<StopAnswers>({});
+  const [myAnswers, setMyAnswers] = useState<StopAnswers>({});
+  const [theirAnswers, setTheirAnswers] = useState<StopAnswers>({});
   const [myScore, setMyScore] = useState(0);
   const [oppScore, setOppScore] = useState(0);
   const [round, setRound] = useState(1);
@@ -56,9 +46,18 @@ export default function StopPage() {
   const [timeLimit, setTimeLimit] = useState(60);
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [theySubmitted, setTheySubmitted] = useState(false);
+  const [disputedTheirs, setDisputedTheirs] = useState<Set<string>>(new Set());
+  const [disputedMine, setDisputedMine] = useState<Set<string>>(new Set());
+  const [iReviewDone, setIReviewDone] = useState(false);
+  const [theyReviewDone, setTheyReviewDone] = useState(false);
+  const [roundScore, setRoundScore] = useState<{ myPts: number; oppPts: number } | null>(null);
 
-  const answersRef = useRef<Answers>({});
+  const answersRef = useRef<StopAnswers>({});
   const submittedRef = useRef(false);
+  const scoringAppliedRef = useRef(false);
+  const doSubmitRef = useRef<() => void>(() => {});
+  const usedLettersRef = useRef<string[]>([]);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -68,8 +67,30 @@ export default function StopPage() {
     setMyScore(0);
     setOppScore(0);
     setRound(1);
+    usedLettersRef.current = [];
     setPhase("config");
   }, []);
+
+  function clearTimers() {
+    if (tickRef.current) clearInterval(tickRef.current);
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }
+
+  function resetRoundState() {
+    setAnswers({});
+    answersRef.current = {};
+    setMyAnswers({});
+    setTheirAnswers({});
+    setSubmitted(false);
+    submittedRef.current = false;
+    setTheySubmitted(false);
+    setDisputedTheirs(new Set());
+    setDisputedMine(new Set());
+    setIReviewDone(false);
+    setTheyReviewDone(false);
+    setRoundScore(null);
+    scoringAppliedRef.current = false;
+  }
 
   useEffect(() => {
     const errorHandler = () => router.push("/");
@@ -83,6 +104,7 @@ export default function StopPage() {
 
       if (type === "stop:config") {
         const p = payload as { maxRounds: number; timeLimit: number };
+        usedLettersRef.current = [];
         setMaxRounds(p.maxRounds);
         setTimeLimit(p.timeLimit);
         setPhase("waiting");
@@ -90,12 +112,8 @@ export default function StopPage() {
 
       if (type === "stop:start") {
         const p = payload as { letter: string; timeLimit: number };
+        resetRoundState();
         setLetter(p.letter);
-        setAnswers({});
-        answersRef.current = {};
-        setBothAnswers(null);
-        setSubmitted(false);
-        submittedRef.current = false;
         setPhase("playing");
         setTimeLeft(p.timeLimit);
 
@@ -112,24 +130,35 @@ export default function StopPage() {
 
         if (timerRef.current) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => {
-          doSubmit();
+          doSubmitRef.current();
         }, p.timeLimit * 1000);
       }
 
-      if (type === "stop:submit") {
-        const p = payload as { answers: Answers };
-        if (_from !== socket.id) {
-          setBothAnswers((prev) => ({
-            mine: prev?.mine ?? {},
-            theirs: p.answers,
-          }));
-        }
+      if (type === "stop:submit" && _from !== socket.id) {
+        const p = payload as { answers: StopAnswers };
+        setTheirAnswers(p.answers);
+        setTheySubmitted(true);
+      }
+
+      if (type === "stop:dispute" && _from !== socket.id) {
+        const p = payload as { category: string; disputed: boolean };
+        setDisputedMine((prev) => {
+          const next = new Set(prev);
+          if (p.disputed) next.add(p.category);
+          else next.delete(p.category);
+          return next;
+        });
+      }
+
+      if (type === "stop:review-done" && _from !== socket.id) {
+        setTheyReviewDone(true);
       }
 
       if (type === "stop:next") {
+        clearTimers();
         setPhase("waiting");
         setRound((r) => r + 1);
-        setBothAnswers(null);
+        resetRoundState();
       }
 
       if (type === "game:end") {
@@ -140,21 +169,28 @@ export default function StopPage() {
     socket.on("game:event", handler);
     return () => {
       socket.off("game:event", handler);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      if (tickRef.current) clearInterval(tickRef.current);
+      clearTimers();
     };
   }, [socket, router]);
 
+  // Ambos enviaron → revisión
   useEffect(() => {
-    if (bothAnswers?.mine && bothAnswers?.theirs && phase === "playing") {
-      if (tickRef.current) clearInterval(tickRef.current);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      const { myPts, oppPts } = calcScore(bothAnswers.mine, bothAnswers.theirs);
-      setMyScore((s) => s + myPts);
-      setOppScore((s) => s + oppPts);
-      setPhase("scoring");
+    if (phase === "playing" && submitted && theySubmitted) {
+      clearTimers();
+      setPhase("reviewing");
     }
-  }, [bothAnswers, phase]);
+  }, [phase, submitted, theySubmitted]);
+
+  // Ambos confirmaron revisión → puntaje
+  useEffect(() => {
+    if (phase !== "reviewing" || !iReviewDone || !theyReviewDone || scoringAppliedRef.current) return;
+    scoringAppliedRef.current = true;
+    const score = calcStopScore(myAnswers, theirAnswers, letter, disputedMine, disputedTheirs);
+    setRoundScore(score);
+    setMyScore((s) => s + score.myPts);
+    setOppScore((s) => s + score.oppPts);
+    setPhase("scoring");
+  }, [phase, iReviewDone, theyReviewDone, myAnswers, theirAnswers, disputedMine, disputedTheirs, letter]);
 
   function configGame(rounds: number, time: number) {
     setMaxRounds(rounds);
@@ -164,10 +200,13 @@ export default function StopPage() {
   }
 
   function startRound() {
-    const l = randomLetter();
+    if (!isHost) return;
+    const next = pickNextLetter(usedLettersRef.current);
+    if (!next) return;
+    usedLettersRef.current = next.used;
     socket.emit("game:action", {
       type: "stop:start",
-      payload: { letter: l, timeLimit: timeLimit },
+      payload: { letter: next.letter, timeLimit: timeLimit },
     });
   }
 
@@ -175,17 +214,42 @@ export default function StopPage() {
     if (submittedRef.current) return;
     submittedRef.current = true;
     setSubmitted(true);
-    if (tickRef.current) clearInterval(tickRef.current);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    const myAnswers = answersRef.current;
-    setBothAnswers((prev) => ({ mine: myAnswers, theirs: prev?.theirs ?? {} }));
-    socket.emit("game:action", { type: "stop:submit", payload: { answers: myAnswers } });
+    clearTimers();
+    const current = { ...answersRef.current };
+    setMyAnswers(current);
+    socket.emit("game:action", { type: "stop:submit", payload: { answers: current } });
   }
+
+  doSubmitRef.current = doSubmit;
 
   function updateAnswer(cat: string, val: string) {
     const next = { ...answersRef.current, [cat]: filterPlainText(val) };
     answersRef.current = next;
     setAnswers(next);
+  }
+
+  function toggleDispute(category: string) {
+    if (phase !== "reviewing" || iReviewDone) return;
+    const answer = theirAnswers[category] ?? "";
+    if (!answer.trim() || !startsWithLetter(answer, letter)) return;
+
+    setDisputedTheirs((prev) => {
+      const next = new Set(prev);
+      const disputed = !next.has(category);
+      if (disputed) next.add(category);
+      else next.delete(category);
+      socket.emit("game:action", {
+        type: "stop:dispute",
+        payload: { category, disputed },
+      });
+      return next;
+    });
+  }
+
+  function confirmReview() {
+    if (iReviewDone) return;
+    setIReviewDone(true);
+    socket.emit("game:action", { type: "stop:review-done", payload: {} });
   }
 
   function nextRound() {
@@ -198,7 +262,7 @@ export default function StopPage() {
   }
 
   const myName = me?.nickname ?? "Yo";
-  const oppName = opponent?.nickname ?? "Ellos";
+  const oppName = opponent?.nickname ?? "Pareja";
   const gameOver = round > maxRounds;
   const iWon = myScore > oppScore;
   const isTie = myScore === oppScore;
@@ -318,11 +382,15 @@ export default function StopPage() {
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <HeaderBar />
         <ScoreBar />
-        <button onClick={startRound}
-          className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-4 px-10 rounded-xl text-xl flex items-center gap-2 mx-auto">
-          <Dices size={24} aria-hidden />
-          Iniciar ronda
-        </button>
+        {isHost ? (
+          <button onClick={startRound}
+            className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-4 px-10 rounded-xl text-xl flex items-center gap-2 mx-auto">
+            <Dices size={24} aria-hidden />
+            Iniciar ronda
+          </button>
+        ) : (
+          <p className="animate-pulse opacity-60">Esperando al anfitrión...</p>
+        )}
       </main>
     );
   }
@@ -339,19 +407,27 @@ export default function StopPage() {
         </div>
 
         <div className="flex flex-col gap-3 w-full max-w-sm mb-6">
-          {CATEGORIES.map((cat) => (
-            <div key={cat} className="flex items-center gap-2">
-              <label className="w-32 text-sm font-medium opacity-70">{cat}</label>
-              <input
-                type="text"
-                value={answers[cat] ?? ""}
-                onChange={(e) => updateAnswer(cat, e.target.value)}
-                disabled={submitted}
-                className="flex-1 border-2 border-pink-200 rounded-lg px-3 py-2 outline-none focus:border-pink-400 disabled:opacity-50"
-                placeholder={`Con ${letter}...`}
-              />
-            </div>
-          ))}
+          {STOP_CATEGORIES.map((cat) => {
+            const value = answers[cat] ?? "";
+            const invalid = value.trim() && !startsWithLetter(value, letter);
+            return (
+              <div key={cat} className="flex items-center gap-2">
+                <label className="w-32 text-sm font-medium opacity-70">{cat}</label>
+                <input
+                  type="text"
+                  value={value}
+                  onChange={(e) => updateAnswer(cat, e.target.value)}
+                  disabled={submitted}
+                  className={`flex-1 border-2 rounded-lg px-3 py-2 outline-none disabled:opacity-50 ${
+                    invalid
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-pink-200 focus:border-pink-400"
+                  }`}
+                  placeholder={`Con ${letter}...`}
+                />
+              </div>
+            );
+          })}
         </div>
 
         {!submitted ? (
@@ -367,16 +443,93 @@ export default function StopPage() {
     );
   }
 
-  const score = bothAnswers ? calcScore(bothAnswers.mine, bothAnswers.theirs) : null;
+  if (phase === "reviewing") {
+    return (
+      <main className="min-h-screen flex flex-col items-center p-6">
+        <HeaderBar />
+        <p className="text-lg font-bold mb-1">Letra: {letter} — Revisión</p>
+        <p className="text-sm opacity-60 mb-4 text-center max-w-md">
+          Toca las respuestas de {oppName} que no sean válidas. Las que no empiecen con {letter} no puntúan.
+        </p>
+
+        <div className="w-full max-w-md overflow-auto mb-4">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left border-b border-pink-200">
+                <th className="pb-2 opacity-60">Categoría</th>
+                <th className="pb-2 text-pink-500">{myName}</th>
+                <th className="pb-2 text-blue-500">{oppName}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {STOP_CATEGORIES.map((cat) => {
+                const m = (myAnswers[cat] ?? "").trim();
+                const t = (theirAnswers[cat] ?? "").trim();
+                const myStatus = getAnswerStatus(m, letter, disputedMine.has(cat));
+                const theirStatus = getAnswerStatus(t, letter, disputedTheirs.has(cat));
+                const canDispute = theirStatus === "valid" && !iReviewDone;
+
+                return (
+                  <tr key={cat} className="border-b border-gray-100">
+                    <td className="py-2 opacity-60">{cat}</td>
+                    <td className={`py-2 font-medium ${answerCellClass(myStatus, false)}`}>
+                      {m || "—"}
+                      {myStatus === "invalid-letter" && (
+                        <span className="block text-xs">No empieza con {letter}</span>
+                      )}
+                      {myStatus === "disputed" && (
+                        <span className="block text-xs">Invalidada por {oppName}</span>
+                      )}
+                    </td>
+                    <td className="py-2">
+                      <button
+                        type="button"
+                        disabled={!canDispute}
+                        onClick={() => toggleDispute(cat)}
+                        className={`font-medium text-left w-full rounded px-1 ${
+                          answerCellClass(theirStatus, false)
+                        } ${canDispute ? "hover:bg-pink-50 cursor-pointer" : ""}`}
+                      >
+                        {t || "—"}
+                        {theirStatus === "invalid-letter" && (
+                          <span className="block text-xs">No empieza con {letter}</span>
+                        )}
+                        {theirStatus === "disputed" && (
+                          <span className="block text-xs">Invalidada por ti</span>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {!iReviewDone ? (
+          <button onClick={confirmReview}
+            className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl flex items-center gap-2">
+            <Check size={18} aria-hidden />
+            Confirmar revisión
+          </button>
+        ) : (
+          <p className="opacity-50 animate-pulse">Esperando a {oppName}...</p>
+        )}
+      </main>
+    );
+  }
+
+  // scoring
   return (
     <main className="min-h-screen flex flex-col items-center p-6">
       <HeaderBar />
       <p className="text-lg font-bold mb-1">Letra: {letter}</p>
       <ScoreBar />
 
-      {score && (
+      {roundScore && (
         <p className="text-sm mb-3 font-medium">
-          Esta ronda: <span className="text-pink-500">+{score.myPts} pts</span> vs <span className="text-blue-500">+{score.oppPts} pts</span>
+          Esta ronda: <span className="text-pink-500">+{roundScore.myPts} pts</span> vs{" "}
+          <span className="text-blue-500">+{roundScore.oppPts} pts</span>
         </p>
       )}
 
@@ -390,17 +543,22 @@ export default function StopPage() {
             </tr>
           </thead>
           <tbody>
-            {CATEGORIES.map((cat) => {
-              const m = (bothAnswers?.mine[cat] ?? "").trim();
-              const t = (bothAnswers?.theirs[cat] ?? "").trim();
-              const tie = m && t && m.toLowerCase() === t.toLowerCase();
+            {STOP_CATEGORIES.map((cat) => {
+              const m = (myAnswers[cat] ?? "").trim();
+              const t = (theirAnswers[cat] ?? "").trim();
+              const myStatus = getAnswerStatus(m, letter, disputedMine.has(cat));
+              const theirStatus = getAnswerStatus(t, letter, disputedTheirs.has(cat));
+              const mValid = myStatus === "valid";
+              const tValid = theirStatus === "valid";
+              const tie = mValid && tValid && m.toLowerCase() === t.toLowerCase();
+
               return (
                 <tr key={cat} className="border-b border-gray-100">
                   <td className="py-2 opacity-60">{cat}</td>
-                  <td className={`py-2 font-medium ${tie ? "text-yellow-600" : m ? "text-green-600" : "text-gray-400"}`}>
+                  <td className={`py-2 font-medium ${answerCellClass(myStatus, tie)}`}>
                     {m || "—"}
                   </td>
-                  <td className={`py-2 font-medium ${tie ? "text-yellow-600" : t ? "text-green-600" : "text-gray-400"}`}>
+                  <td className={`py-2 font-medium ${answerCellClass(theirStatus, tie)}`}>
                     {t || "—"}
                   </td>
                 </tr>
@@ -408,7 +566,9 @@ export default function StopPage() {
             })}
           </tbody>
         </table>
-        <p className="text-xs opacity-40 mt-2">Misma respuesta = 50pts. Única = 100pts.</p>
+        <p className="text-xs opacity-40 mt-2">
+          Válida con {letter} = puntos. Misma respuesta = 50pts. Única = 100pts.
+        </p>
       </div>
 
       {isHost ? (

@@ -6,7 +6,7 @@ import { Crown } from "lucide-react";
 import { CopyableText } from "@/components/CopyableText";
 import { GameIcon } from "@/components/GameIcon";
 import { getSocket } from "@/lib/socket";
-import { saveRoomToSession } from "@/lib/useRoom";
+import { savePlayerIdentity, saveRoomToSession } from "@/lib/useRoom";
 import { getGameMeta } from "@/lib/gameMeta";
 import { filterPlainText, isPlainTextValid } from "@/lib/validation";
 import type { Room, GameId } from "@/lib/types";
@@ -39,8 +39,10 @@ export default function NewLobbyPage() {
 
   function createRoom() {
     if (!isPlainTextValid(nickname)) return;
+    const trimmed = nickname.trim();
+    savePlayerIdentity({ nickname: trimmed, isHost: true });
     const socket = getSocket();
-    socket.emit("room:create", { gameId, nickname: nickname.trim() });
+    socket.emit("room:create", { gameId, nickname: trimmed });
   }
 
   useEffect(() => {

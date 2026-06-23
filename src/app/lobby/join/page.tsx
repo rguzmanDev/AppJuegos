@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSocket } from "@/lib/socket";
-import { saveRoomToSession } from "@/lib/useRoom";
+import { savePlayerIdentity, saveRoomToSession } from "@/lib/useRoom";
 import { filterPlainText, isPlainTextValid } from "@/lib/validation";
 import type { Room } from "@/lib/types";
 
@@ -40,8 +40,10 @@ export default function JoinLobbyPage() {
 
   function join() {
     if (!isPlainTextValid(nickname) || !code.trim()) return;
+    const trimmed = nickname.trim();
+    savePlayerIdentity({ nickname: trimmed, isHost: false });
     const socket = getSocket();
-    socket.emit("room:join", { code: code.trim().toUpperCase(), nickname: nickname.trim() });
+    socket.emit("room:join", { code: code.trim().toUpperCase(), nickname: trimmed });
   }
 
   return (

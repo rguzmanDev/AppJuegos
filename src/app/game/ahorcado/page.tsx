@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Pollito } from "@/components/mascots/Pollito";
+import { Pollito } from "@/components/mascots/Mascots";
 import { GameNavLink, LobbyExitLink } from "@/components/GameNavLink";
 import { GameIcon } from "@/components/GameIcon";
 import { LetterKeyboard } from "@/components/LetterKeyboard";
@@ -12,15 +12,6 @@ import { filterWordText, isWordValid } from "@/lib/validation";
 import type { GameEvent } from "@/lib/types";
 
 const MAX_ERRORS = 6;
-const ERROR_MOODS: Array<"happy" | "nervous" | "sad" | "dizzy"> = [
-  "happy",
-  "happy",
-  "nervous",
-  "nervous",
-  "sad",
-  "sad",
-  "dizzy",
-];
 
 export default function AhorcadoPage() {
   const params = useSearchParams();
@@ -163,7 +154,7 @@ export default function AhorcadoPage() {
   const oppName = opponent?.nickname ?? "Ellos";
   const errors = guessed.filter((l) => word && !word.includes(l)).length;
   const gameOver = round > maxRounds;
-  const pollitoMood = ERROR_MOODS[Math.min(errors, 6)];
+  const pollitoShake = errors >= 4;
 
   const iWon = myScore > oppScore;
   const isTie = myScore === oppScore;
@@ -282,8 +273,11 @@ export default function AhorcadoPage() {
       <Header />
       <Scores />
 
-      <div className="mb-2">
-        <Pollito size={72} mood={pollitoMood} />
+      <div
+        className={`mb-2 transition-all duration-300 ${pollitoShake ? "animate-pulse" : ""}`}
+        style={{ opacity: Math.max(0.45, 1 - errors * 0.09), transform: `rotate(${errors * -2}deg)` }}
+      >
+        <Pollito size={72} />
       </div>
       <p className="text-sm opacity-40 mb-4">Errores: {errors}/{MAX_ERRORS}</p>
 

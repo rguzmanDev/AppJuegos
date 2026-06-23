@@ -75,6 +75,35 @@ io.on("connection", (socket) => {
     io.to(code.toUpperCase()).emit("room:updated", room);
   });
 
+  socket.on("room:restore", ({ code, nickname, isHost }) => {
+    const roomCode = code.toUpperCase();
+    const room = rooms.get(roomCode);
+    if (!room) return;
+
+    const existing = room.players.find(
+      (p) => p.nickname === nickname && p.isHost === isHost,
+    );
+
+    if (existing) {
+      existing.id = socket.id;
+    } else if (room.players.length < 2) {
+      room.players.push({ id: socket.id, nickname, isHost });
+    } else {
+      const stale = room.players.find((p) => !io.sockets.sockets.has(p.id));
+      if (stale) {
+        stale.id = socket.id;
+        stale.nickname = nickname;
+        stale.isHost = isHost;
+      } else {
+        return;
+      }
+    }
+
+    currentRoomCode = roomCode;
+    socket.join(roomCode);
+    io.to(roomCode).emit("room:updated", room);
+  });
+
   socket.on("game:action", (action) => {
     if (!currentRoomCode) return;
     const room = rooms.get(currentRoomCode);

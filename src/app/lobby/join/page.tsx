@@ -6,7 +6,7 @@ import { getSocket } from "@/lib/socket";
 import { savePlayerIdentity, saveRoomToSession } from "@/lib/useRoom";
 import { filterPlainText, isPlainTextValid } from "@/lib/validation";
 import type { Room } from "@/lib/types";
-import { CoupleMascots } from "@/components/mascots/CoupleMascots";
+import { CoupleMascots } from "@/components/mascots/Mascots";
 
 export default function JoinLobbyPage() {
   const searchParams = useSearchParams();

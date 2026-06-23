@@ -2,9 +2,7 @@
 
 import type { GameId } from "@/lib/types";
 import { getGameMeta } from "@/lib/gameMeta";
-import { CoupleMascots } from "@/components/mascots/CoupleMascots";
-import { Pollito } from "@/components/mascots/Pollito";
-import { Pinguinito } from "@/components/mascots/Pinguinito";
+import { CoupleMascots, Pollito, Pinguinito } from "@/components/mascots/Mascots";
 import { clsx } from "clsx";
 
 interface GameIconProps {
@@ -32,12 +30,11 @@ interface MascotIconProps {
   variant: "pollito" | "pinguinito";
   size?: number;
   className?: string;
-  mood?: "happy" | "nervous" | "sad" | "dizzy";
 }
 
-export function MascotIcon({ variant, size = 32, className, mood }: MascotIconProps) {
+export function MascotIcon({ variant, size = 32, className }: MascotIconProps) {
   if (variant === "pollito") {
-    return <Pollito size={size} className={className} mood={mood} />;
+    return <Pollito size={size} className={className} />;
   }
   return <Pinguinito size={size} className={className} />;
 }

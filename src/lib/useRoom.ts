@@ -36,28 +36,41 @@ function loadPlayerIdentity(): SavedPlayerIdentity | null {
   return raw ? (JSON.parse(raw) as SavedPlayerIdentity) : null;
 }
 
-function isSamePlayer(a: Player, b: Player): boolean {
-  return a.nickname === b.nickname && a.isHost === b.isHost;
+function isOpponent(a: Player, b: Player): boolean {
+  return a.nickname !== b.nickname || a.isHost !== b.isHost;
 }
 
-function resolvePlayers(room: Room | null, socketId: string) {
+export function resolvePlayers(room: Room | null, socketId: string) {
+  const saved = loadPlayerIdentity();
+
   if (!room || room.players.length === 0) {
+    if (saved) {
+      return {
+        me: { id: socketId, nickname: saved.nickname, isHost: saved.isHost },
+        opponent: undefined,
+      };
+    }
     return { me: undefined, opponent: undefined };
   }
 
-  let me = socketId ? room.players.find((p) => p.id === socketId) : undefined;
+  let me: Player | undefined;
 
-  if (!me) {
-    const saved = loadPlayerIdentity();
-    if (saved) {
-      me = room.players.find(
-        (p) => p.nickname === saved.nickname && p.isHost === saved.isHost,
-      );
-    }
+  if (saved) {
+    me = room.players.find(
+      (p) => p.nickname === saved.nickname && p.isHost === saved.isHost,
+    );
+  }
+
+  if (!me && socketId) {
+    me = room.players.find((p) => p.id === socketId);
+  }
+
+  if (!me && saved) {
+    me = { id: socketId, nickname: saved.nickname, isHost: saved.isHost };
   }
 
   const opponent = me
-    ? room.players.find((p) => !isSamePlayer(p, me!))
+    ? room.players.find((p) => isOpponent(p, me!))
     : room.players.find((p) => p.id !== socketId);
 
   return { me, opponent };
@@ -69,7 +82,21 @@ export function useRoom() {
   const [socketId, setSocketId] = useState(socket.id ?? "");
 
   useEffect(() => {
-    const onConnect = () => setSocketId(socket.id ?? "");
+    const restoreSession = () => {
+      const id = socket.id ?? "";
+      setSocketId(id);
+
+      const saved = loadPlayerIdentity();
+      const storedRoom = loadRoomFromSession();
+      if (!saved || !storedRoom?.code) return;
+
+      socket.emit("room:restore", {
+        code: storedRoom.code,
+        nickname: saved.nickname,
+        isHost: saved.isHost,
+      });
+    };
+
     const onRoom = (r: Room) => {
       setRoom(r);
       saveRoomToSession(r);
@@ -79,12 +106,13 @@ export function useRoom() {
       }
     };
 
-    socket.on("connect", onConnect);
+    socket.connect();
+    socket.on("connect", restoreSession);
     socket.on("room:updated", onRoom);
-    if (socket.connected) onConnect();
+    if (socket.connected) restoreSession();
 
     return () => {
-      socket.off("connect", onConnect);
+      socket.off("connect", restoreSession);
       socket.off("room:updated", onRoom);
     };
   }, [socket]);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CoupleMascots } from "@/components/mascots/CoupleMascots";
+import { CoupleMascots } from "@/components/mascots/Mascots";
 import { GAMES } from "@/lib/gameMeta";
 
 export function HomeContent() {

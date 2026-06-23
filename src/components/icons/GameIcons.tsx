@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { Pollito } from "@/components/mascots/Pollito";
+import { Pollito } from "@/components/mascots/Mascots";
 
 export interface IconProps {
   size?: number;
@@ -17,13 +17,12 @@ export function PPTIcon({ size = 32, className }: IconProps) {
         stroke="#A78BFA"
         strokeWidth="1"
       />
-      <circle cx="18" cy="26" r="2" fill="#BE185D" opacity="0.4" />
     </svg>
   );
 }
 
 export function AhorcadoIcon({ size = 32, className }: IconProps) {
-  return <Pollito size={size} className={className} mood="nervous" />;
+  return <Pollito size={size} className={className} />;
 }
 
 export function StopIcon({ size = 32, className }: IconProps) {
@@ -33,10 +32,7 @@ export function StopIcon({ size = 32, className }: IconProps) {
       <rect x="20" y="18" width="24" height="4" rx="2" fill="#F472B6" opacity="0.5" />
       <rect x="20" y="26" width="18" height="3" rx="1.5" fill="#F472B6" opacity="0.35" />
       <rect x="20" y="33" width="20" height="3" rx="1.5" fill="#F472B6" opacity="0.35" />
-      <path
-        d="M38 42 C38 38 42 36 44 40 C46 44 40 48 38 42"
-        fill="#F472B6"
-      />
+      <path d="M38 42 C38 38 42 36 44 40 C46 44 40 48 38 42" fill="#F472B6" />
     </svg>
   );
 }
@@ -71,13 +67,6 @@ export function TrophyIcon({ size = 32, className }: IconProps) {
       <path d="M46 18 H42 V22 C42 24 44 26 46 26 Z" fill="#FDE047" />
       <rect x="28" y="34" width="8" height="8" fill="#EAB308" />
       <rect x="22" y="42" width="20" height="6" rx="2" fill="#CA8A04" />
-      <path
-        d="M30 20 L32 24 L34 20"
-        fill="none"
-        stroke="#F472B6"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
     </svg>
   );
 }

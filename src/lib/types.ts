@@ -33,6 +33,7 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   "room:join": (payload: { code: string; nickname: string }) => void;
   "room:create": (payload: { gameId: GameId; nickname: string }) => void;
+  "room:restore": (payload: { code: string; nickname: string; isHost: boolean }) => void;
   "game:action": (action: GameAction) => void;
 }
 

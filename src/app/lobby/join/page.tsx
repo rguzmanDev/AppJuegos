@@ -49,33 +49,47 @@ export default function JoinLobbyPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-      <CoupleMascots size={56} className="mb-4" />
-      <h2 className="font-display text-3xl font-bold mb-1">Unirse a partida</h2>
-      <p className="text-muted mb-8">Ingresa el código que te compartieron</p>
+    <main className="min-h-screen flex flex-col items-center justify-center px-5 py-10">
+      <div className="w-full max-w-xs">
+        <div className="text-center mb-8">
+          <CoupleMascots size={48} className="mb-3 justify-center" />
+          <h2 className="font-display text-2xl font-bold">Unirse</h2>
+          <p className="text-muted text-sm mt-1">Ingresa el código que te compartieron</p>
+        </div>
 
-      <div className="flex flex-col gap-3 w-full max-w-xs">
-        <input
-          type="text"
-          placeholder="Código de partida"
-          value={code}
-          maxLength={6}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          className="input-field text-2xl font-mono tracking-widest uppercase"
-        />
-        <input
-          type="text"
-          placeholder="Tu nickname"
-          value={nickname}
-          maxLength={20}
-          onChange={(e) => setNickname(filterPlainText(e.target.value))}
-          onKeyDown={(e) => e.key === "Enter" && join()}
-          className="input-field text-lg"
-        />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <Button onClick={join} disabled={!isPlainTextValid(nickname) || !code.trim()} fullWidth>
-          Unirse
-        </Button>
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="text-xs font-medium uppercase tracking-widest text-muted block mb-1.5">
+              Código
+            </label>
+            <input
+              type="text"
+              placeholder="ABCDEF"
+              value={code}
+              maxLength={6}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              className="input-field text-2xl font-mono tracking-[0.25em] uppercase text-center"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-widest text-muted block mb-1.5">
+              Tu nombre
+            </label>
+            <input
+              type="text"
+              placeholder="Nickname"
+              value={nickname}
+              maxLength={20}
+              onChange={(e) => setNickname(filterPlainText(e.target.value))}
+              onKeyDown={(e) => e.key === "Enter" && join()}
+              className="input-field"
+            />
+          </div>
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+          <Button onClick={join} disabled={!isPlainTextValid(nickname) || !code.trim()} fullWidth>
+            Entrar
+          </Button>
+        </div>
       </div>
     </main>
   );

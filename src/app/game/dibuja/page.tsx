@@ -431,7 +431,7 @@ export default function DibujaPage() {
 
       {isDrawer ? (
         <div className="flex items-center gap-4 mb-2">
-          <div className="bg-[var(--color-accent-light)] border border-[var(--color-border)] rounded-xl px-4 py-1 font-bold">
+          <div className="bg-[var(--color-accent-soft)] border border-[var(--color-border)] rounded-xl px-4 py-1 font-bold">
             Dibuja: <span className="text-[var(--color-accent)]">{word}</span>
           </div>
           <span className={`font-bold ${timeLeft <= 10 ? "text-red-500 animate-pulse" : "opacity-60"}`}>{timeLeft}s</span>

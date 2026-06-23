@@ -27,7 +27,7 @@ export function CopyableText({ text, className, label }: CopyableTextProps) {
       onClick={handleCopy}
       title="Clic para copiar"
       className={clsx(
-        "cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]",
+        "cursor-pointer transition-opacity duration-100 hover:opacity-90 active:opacity-80",
         className,
       )}
     >

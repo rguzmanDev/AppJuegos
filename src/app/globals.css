@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --color-accent: #d4849a;
-  --color-accent-hover: #c07288;
-  --color-accent-light: #f5e6eb;
-  --color-secondary: #7a9cb8;
-  --color-secondary-hover: #6889a5;
-  --color-bg: #faf6f1;
-  --color-surface: #ffffff;
-  --color-border: #e8ddd4;
-  --color-text: #3d2c2e;
-  --color-muted: #8a7578;
+  --color-accent: #c97b8e;
+  --color-accent-hover: #b5687c;
+  --color-accent-soft: #f0e0e5;
+  --color-secondary: #6d8fa8;
+  --color-secondary-hover: #5c7d96;
+  --color-bg: #f7f2eb;
+  --color-surface: #fffcf8;
+  --color-border: #ddd2c6;
+  --color-border-strong: #c9bbaa;
+  --color-text: #2e2224;
+  --color-muted: #7d6e71;
 }
 
 body {
@@ -33,12 +34,12 @@ textarea {
 
 @layer components {
   .btn {
-    @apply font-semibold py-3 px-6 rounded-xl transition-colors duration-150;
+    @apply font-medium py-2.5 px-5 rounded-lg transition-colors duration-150;
     @apply disabled:opacity-40 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply font-semibold py-3 px-6 rounded-xl transition-colors duration-150 text-white;
+    @apply font-medium py-2.5 px-5 rounded-lg transition-colors duration-150 text-white;
     @apply disabled:opacity-40 disabled:cursor-not-allowed;
     background-color: var(--color-accent);
   }
@@ -48,7 +49,7 @@ textarea {
   }
 
   .btn-secondary {
-    @apply font-semibold py-3 px-6 rounded-xl transition-colors duration-150 text-white;
+    @apply font-medium py-2.5 px-5 rounded-lg transition-colors duration-150 text-white;
     @apply disabled:opacity-40 disabled:cursor-not-allowed;
     background-color: var(--color-secondary);
   }
@@ -58,18 +59,18 @@ textarea {
   }
 
   .btn-ghost {
-    @apply font-semibold py-3 px-6 rounded-xl transition-colors duration-150 bg-transparent;
+    @apply font-medium py-2.5 px-5 rounded-lg transition-colors duration-150 bg-transparent;
     @apply disabled:opacity-40 disabled:cursor-not-allowed;
     color: var(--color-muted);
   }
 
   .btn-ghost:hover:not(:disabled) {
-    background-color: var(--color-accent-light);
     color: var(--color-text);
+    background-color: rgba(46, 34, 36, 0.05);
   }
 
   .btn-danger {
-    @apply font-semibold py-3 px-6 rounded-xl transition-colors duration-150 text-white bg-red-400;
+    @apply font-medium py-2.5 px-5 rounded-lg transition-colors duration-150 text-white bg-red-400;
     @apply disabled:opacity-40 disabled:cursor-not-allowed;
   }
 
@@ -77,37 +78,180 @@ textarea {
     @apply bg-red-500;
   }
 
-  .card {
-    @apply rounded-xl p-5 border;
+  /* Lista agrupada — un solo contenedor, filas con divisor */
+  .game-list {
+    @apply w-full max-w-md overflow-hidden rounded-lg;
+    border: 1px solid var(--color-border);
     background-color: var(--color-surface);
+  }
+
+  .game-row {
+    @apply flex items-center gap-3 px-4 py-3.5 no-underline text-inherit;
+    @apply border-b transition-colors duration-100;
     border-color: var(--color-border);
   }
 
-  .card-interactive {
-    @apply rounded-xl p-5 border cursor-pointer transition-colors duration-150;
-    background-color: var(--color-surface);
-    border-color: var(--color-border);
+  .game-row:last-child {
+    @apply border-b-0;
   }
 
-  .card-interactive:hover {
-    border-color: var(--color-accent);
-    background-color: var(--color-accent-light);
+  .game-row:hover {
+    background-color: var(--color-accent-soft);
+  }
+
+  .game-row-icon {
+    @apply flex shrink-0 items-center justify-center w-10 h-10;
+  }
+
+  .game-row-body {
+    @apply flex flex-col flex-1 min-w-0 text-left;
+  }
+
+  .game-row-title {
+    @apply font-medium text-[15px] leading-snug;
+  }
+
+  .game-row-desc {
+    @apply text-[13px] leading-snug mt-0.5;
+    color: var(--color-muted);
+  }
+
+  .game-row-chevron {
+    @apply shrink-0 text-sm transition-transform duration-100;
+    color: var(--color-border-strong);
+  }
+
+  .group:hover .game-row-chevron {
+    color: var(--color-accent);
+    transform: translateX(2px);
+  }
+
+  /* Panel con franja lateral — para códigos, bloques de info */
+  .panel {
+    @apply rounded-lg px-4 py-3;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .panel-code {
+    @apply rounded-lg px-6 py-5 text-left w-full max-w-xs;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-accent);
+    font-family: ui-monospace, monospace;
+    letter-spacing: 0.2em;
+  }
+
+  .panel-inset {
+    @apply rounded-lg px-4 py-3 text-sm break-all;
+    background-color: rgba(46, 34, 36, 0.04);
+    border: 1px dashed var(--color-border);
+    color: var(--color-muted);
+  }
+
+  .panel-tap {
+    @apply cursor-pointer transition-colors duration-100;
+  }
+
+  .panel-tap:hover {
+    border-color: var(--color-border-strong);
   }
 
   .input-field {
-    @apply w-full border border-[var(--color-border)] rounded-xl px-4 py-3 text-center outline-none;
-    @apply focus:border-[var(--color-accent)] bg-[var(--color-surface)];
+    @apply w-full rounded-lg px-4 py-3 outline-none text-left;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
   }
 
-  .badge-host {
-    @apply bg-[var(--color-accent-light)] border border-[var(--color-border)] rounded-full;
+  .input-field:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-accent-soft);
   }
 
+  .badge-host,
   .badge-guest {
-    @apply bg-slate-50 border border-slate-200 rounded-full;
+    @apply px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2;
+    background-color: rgba(46, 34, 36, 0.04);
+    border: 1px solid var(--color-border);
+  }
+
+  .score-row {
+    @apply flex items-center justify-between py-2.5 border-b;
+    border-color: var(--color-border);
+  }
+
+  .score-row:last-child {
+    @apply border-b-0;
   }
 
   .text-muted {
     color: var(--color-muted);
+  }
+
+  .link-subtle {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .site-footer {
+    @apply py-8 px-5 text-center;
+  }
+
+  .site-footer-ornament {
+    @apply flex items-center justify-center gap-3 mb-4 max-w-xs mx-auto;
+  }
+
+  .site-footer-gem {
+    @apply block w-1.5 h-1.5 rotate-45 shrink-0;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-secondary) 100%);
+    opacity: 0.85;
+  }
+
+  .site-footer-rule {
+    @apply flex-1 h-px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-border-strong) 20%,
+      var(--color-accent) 50%,
+      var(--color-border-strong) 80%,
+      transparent 100%
+    );
+  }
+
+  .site-footer-copy {
+    @apply flex flex-col items-center gap-1;
+  }
+
+  .site-footer-label {
+    @apply text-[10px] font-medium uppercase tracking-[0.35em];
+    color: var(--color-muted);
+  }
+
+  .site-footer-brand {
+    font-family: var(--font-display), Georgia, serif;
+    @apply text-lg font-bold tracking-tight no-underline transition-all duration-300;
+    color: var(--color-text);
+    background: linear-gradient(
+      120deg,
+      var(--color-text) 0%,
+      var(--color-accent) 45%,
+      var(--color-secondary) 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .site-footer-brand:hover {
+    background-position: 100% center;
+    filter: drop-shadow(0 0 12px rgba(201, 123, 142, 0.35));
+  }
+
+  .site-footer-tld {
+    font-weight: 600;
+    opacity: 0.92;
   }
 }

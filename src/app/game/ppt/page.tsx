@@ -225,7 +225,7 @@ export default function PPTPage() {
                 disabled={!!myChoice}
                 className={`p-3 rounded-xl border-2 transition-colors disabled:cursor-default ${
                   myChoice === c
-                    ? "border-[var(--color-accent)] bg-[var(--color-accent-light)]"
+                    ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
                     : "border-[var(--color-border)] hover:border-[var(--color-accent)]"
                 }`}
               >

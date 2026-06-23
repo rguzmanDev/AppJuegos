@@ -271,7 +271,7 @@ export default function AhorcadoPage() {
       </p>
 
       {!isGuesser && (
-        <div className="bg-[var(--color-accent-light)] border border-[var(--color-border)] rounded-xl px-6 py-2 mb-3 font-bold text-lg">
+        <div className="bg-[var(--color-accent-soft)] border border-[var(--color-border)] rounded-xl px-6 py-2 mb-3 font-bold text-lg">
           {word}
         </div>
       )}

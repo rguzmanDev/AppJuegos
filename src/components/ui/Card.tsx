@@ -1,16 +1,33 @@
 import { clsx } from "clsx";
 
-interface CardProps {
+interface PanelProps {
   children: React.ReactNode;
   className?: string;
-  as?: "div" | "article";
-  interactive?: boolean;
+  variant?: "default" | "code" | "inset";
 }
 
-export function Card({ children, className, as: Tag = "div", interactive }: CardProps) {
+export function Panel({ children, className, variant = "default" }: PanelProps) {
   return (
-    <Tag className={clsx(interactive ? "card-interactive" : "card", className)}>
+    <div className={clsx(
+      variant === "code" && "panel-code",
+      variant === "inset" && "panel-inset",
+      variant === "default" && "panel",
+      className,
+    )}>
       {children}
-    </Tag>
+    </div>
+  );
+}
+
+/** @deprecated Prefer Panel or GameList for new UI */
+export function Card({ children, className, interactive }: {
+  children: React.ReactNode;
+  className?: string;
+  interactive?: boolean;
+}) {
+  return (
+    <div className={clsx(interactive ? "panel panel-tap" : "panel", className)}>
+      {children}
+    </div>
   );
 }

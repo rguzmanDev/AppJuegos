@@ -1,7 +1,6 @@
 "use client";
 
-import { Crown } from "lucide-react";
-import { GameIcon } from "@/components/GameIcon";
+import { GameIcon, MascotIcon } from "@/components/GameIcon";
 import type { GameId } from "@/lib/types";
 
 interface GameHeaderBarProps {
@@ -16,15 +15,15 @@ export function GameHeaderBar({ gameId, title, left, center, onExit }: GameHeade
   return (
     <div className="flex w-full max-w-lg justify-between items-center mb-3">
       {left ?? (
-        <button type="button" onClick={onExit} className="text-sm opacity-40 hover:opacity-70">
-          ← Inicio
+        <button type="button" onClick={onExit} className="text-sm text-pink-300 hover:text-pink-500 font-medium">
+          Inicio
         </button>
       )}
-      <span className="text-sm font-medium opacity-60 flex items-center gap-1.5">
-        {gameId && <GameIcon gameId={gameId} size={14} />}
+      <span className="text-sm font-semibold text-pink-400/80 flex items-center gap-1.5">
+        {gameId && <GameIcon gameId={gameId} size={16} />}
         {center ?? title}
       </span>
-      <button type="button" onClick={onExit} className="text-sm opacity-40 hover:opacity-70">
+      <button type="button" onClick={onExit} className="text-sm text-pink-300 hover:text-pink-500 font-medium">
         Salir
       </button>
     </div>
@@ -33,13 +32,13 @@ export function GameHeaderBar({ gameId, title, left, center, onExit }: GameHeade
 
 export function PlayerBadge({ nickname, isHost }: { nickname: string; isHost: boolean }) {
   return (
-    <div className="bg-pink-100 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1.5">
-      {nickname}
-      {isHost ? (
-        <Crown size={14} className="text-yellow-600" aria-label="Anfitrión" />
-      ) : (
-        <GameIcon brand size={14} className="text-pink-500" />
-      )}
+    <div
+      className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
+        isHost ? "badge-pollito" : "badge-pinguinito"
+      }`}
+    >
+      <MascotIcon variant={isHost ? "pollito" : "pinguinito"} size={20} />
+      <span className={isHost ? "text-pink-800" : "text-sky-800"}>{nickname}</span>
     </div>
   );
 }

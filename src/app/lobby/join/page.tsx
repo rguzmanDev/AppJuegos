@@ -6,6 +6,7 @@ import { getSocket } from "@/lib/socket";
 import { savePlayerIdentity, saveRoomToSession } from "@/lib/useRoom";
 import { filterPlainText, isPlainTextValid } from "@/lib/validation";
 import type { Room } from "@/lib/types";
+import { CoupleMascots } from "@/components/mascots/CoupleMascots";
 
 export default function JoinLobbyPage() {
   const searchParams = useSearchParams();
@@ -48,7 +49,8 @@ export default function JoinLobbyPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-      <h2 className="text-3xl font-bold mb-1">Unirse a partida</h2>
+      <CoupleMascots size={56} className="mb-4" />
+      <h2 className="text-3xl font-extrabold mb-1 text-pink-900">Unirse a partida</h2>
       <p className="opacity-60 mb-8">Ingresa el código que te compartieron</p>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
@@ -73,7 +75,7 @@ export default function JoinLobbyPage() {
         <button
           onClick={join}
           disabled={!isPlainTextValid(nickname) || !code.trim()}
-          className="bg-pink-400 hover:bg-pink-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-colors"
+          className="btn-primary w-full rounded-xl"
         >
           Unirse
         </button>

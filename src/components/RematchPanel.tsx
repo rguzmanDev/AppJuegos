@@ -148,13 +148,13 @@ export function RematchPanel({
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={acceptRematch}
-            className="bg-green-400 text-white font-bold py-3 px-8 rounded-xl hover:bg-green-500"
+            className="btn-primary rounded-xl"
           >
             {oppName} quiere revancha — Aceptar
           </button>
           <button
             onClick={rejectRematch}
-            className="bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-xl hover:bg-gray-400"
+            className="btn-cute bg-pink-100 text-pink-600 hover:bg-pink-200 rounded-xl"
           >
             Rechazar
           </button>
@@ -166,7 +166,7 @@ export function RematchPanel({
       ) : canRequest ? (
         <button
           onClick={requestRematch}
-          className="bg-pink-400 text-white font-bold py-3 px-8 rounded-xl hover:bg-pink-500"
+          className="btn-primary rounded-xl"
         >
           Pedir revancha ({secondsLeft}s)
         </button>
@@ -180,7 +180,7 @@ export function RematchPanel({
 
       <GameNavLink
         variant="button"
-        className="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl hover:bg-gray-300"
+        className="btn-cute bg-pink-50 text-pink-500 hover:bg-pink-100 rounded-xl"
       >
         Inicio
       </GameNavLink>

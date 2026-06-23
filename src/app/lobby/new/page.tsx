@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Crown } from "lucide-react";
 import { CopyableText } from "@/components/CopyableText";
-import { GameIcon } from "@/components/GameIcon";
+import { GameIcon, MascotIcon } from "@/components/GameIcon";
 import { getSocket } from "@/lib/socket";
 import { savePlayerIdentity, saveRoomToSession } from "@/lib/useRoom";
 import { getGameMeta } from "@/lib/gameMeta";
@@ -78,22 +77,21 @@ export default function NewLobbyPage() {
           className="text-sm font-medium bg-pink-50 px-4 py-2 rounded-lg border border-pink-200 break-all hover:bg-pink-100"
         />
 
-        <div className="mt-8 flex gap-3 items-center">
+        <div className="mt-8 flex gap-3 items-center flex-wrap justify-center">
           {room.players.map((p) => (
             <div
               key={p.id}
-              className="bg-pink-100 px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1"
+              className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
+                p.isHost ? "badge-pollito" : "badge-pinguinito"
+              }`}
             >
-              {p.nickname}
-              {p.isHost ? (
-                <Crown size={14} className="text-yellow-600" aria-label="Anfitrión" />
-              ) : (
-                <GameIcon brand size={14} className="text-pink-500" />
-              )}
+              <MascotIcon variant={p.isHost ? "pollito" : "pinguinito"} size={20} />
+              <span className={p.isHost ? "text-pink-800" : "text-sky-800"}>{p.nickname}</span>
             </div>
           ))}
           {room.players.length < 2 && (
-            <div className="opacity-40 text-sm animate-pulse">
+            <div className="text-sm text-pink-300 animate-pulse font-medium flex items-center gap-1.5">
+              <MascotIcon variant="pinguinito" size={18} />
               Esperando pareja...
             </div>
           )}
@@ -124,7 +122,7 @@ export default function NewLobbyPage() {
         <button
           onClick={createRoom}
           disabled={!isPlainTextValid(nickname)}
-          className="bg-pink-400 hover:bg-pink-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-colors"
+          className="btn-primary w-full rounded-xl"
         >
           Crear partida
         </button>

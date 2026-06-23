@@ -1,12 +1,12 @@
 import { getTop10 } from "@/lib/db";
 import { GAMES } from "@/lib/gameMeta";
-import { Trophy } from "lucide-react";
+import { TrophyIcon } from "@/components/icons/GameIcons";
 
 export default function ScoresPage() {
   return (
     <main className="min-h-screen p-6 max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold mb-1 text-center flex items-center justify-center gap-2">
-        <Trophy className="text-yellow-500" size={32} aria-hidden />
+        <TrophyIcon size={32} />
         Top 10
       </h1>
       <p className="text-center opacity-50 mb-8 text-sm">Mejores puntuaciones por juego</p>
@@ -18,7 +18,7 @@ export default function ScoresPage() {
           return (
             <div key={game.id}>
               <h2 className="text-xl font-bold mb-3 flex items-center gap-2">
-                <Icon size={24} className="text-pink-500" aria-hidden />
+                <Icon size={24} aria-hidden />
                 {game.name}
               </h2>
               {scores.length === 0 ? (

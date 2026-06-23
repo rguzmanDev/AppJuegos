@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Frown, Meh, Skull, Smile, Star } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Pollito } from "@/components/mascots/Pollito";
 import { GameNavLink, LobbyExitLink } from "@/components/GameNavLink";
 import { GameIcon } from "@/components/GameIcon";
 import { LetterKeyboard } from "@/components/LetterKeyboard";
@@ -13,7 +12,15 @@ import { filterWordText, isWordValid } from "@/lib/validation";
 import type { GameEvent } from "@/lib/types";
 
 const MAX_ERRORS = 6;
-const FACES: LucideIcon[] = [Smile, Meh, Frown, Frown, Skull, Skull, Star];
+const ERROR_MOODS: Array<"happy" | "nervous" | "sad" | "dizzy"> = [
+  "happy",
+  "happy",
+  "nervous",
+  "nervous",
+  "sad",
+  "sad",
+  "dizzy",
+];
 
 export default function AhorcadoPage() {
   const params = useSearchParams();
@@ -156,7 +163,7 @@ export default function AhorcadoPage() {
   const oppName = opponent?.nickname ?? "Ellos";
   const errors = guessed.filter((l) => word && !word.includes(l)).length;
   const gameOver = round > maxRounds;
-  const FaceIcon = FACES[Math.min(errors, 6)];
+  const pollitoMood = ERROR_MOODS[Math.min(errors, 6)];
 
   const iWon = myScore > oppScore;
   const isTie = myScore === oppScore;
@@ -262,7 +269,7 @@ export default function AhorcadoPage() {
         <button
           onClick={submitWord}
           disabled={!isWordValid(wordInput)}
-          className="bg-pink-400 hover:bg-pink-500 disabled:opacity-40 text-white font-bold py-3 px-8 rounded-xl"
+          className="btn-primary rounded-xl"
         >
           Listo! Que adivine →
         </button>
@@ -275,8 +282,8 @@ export default function AhorcadoPage() {
       <Header />
       <Scores />
 
-      <div className="mb-2 text-pink-500">
-        <FaceIcon size={64} aria-hidden />
+      <div className="mb-2">
+        <Pollito size={72} mood={pollitoMood} />
       </div>
       <p className="text-sm opacity-40 mb-4">Errores: {errors}/{MAX_ERRORS}</p>
 
@@ -304,7 +311,7 @@ export default function AhorcadoPage() {
             {isGuesser ? "Adivinaste!" : `${oppName} adivinó`}
           </p>
           {isHost ? (
-            <button onClick={nextRound} className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl">
+            <button onClick={nextRound} className="btn-primary rounded-xl">
               Siguiente ronda →
             </button>
           ) : (
@@ -320,7 +327,7 @@ export default function AhorcadoPage() {
           </p>
           <p className="opacity-60 mb-3">La palabra era: <strong>{word}</strong></p>
           {isHost ? (
-            <button onClick={nextRound} className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl">
+            <button onClick={nextRound} className="btn-primary rounded-xl">
               Siguiente ronda →
             </button>
           ) : (
@@ -356,7 +363,7 @@ function ConfigPicker({
         <div className="flex gap-3">
           {[4, 6, 8].map((n) => (
             <button key={n} onClick={() => setRounds(n)}
-              className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-xl text-lg">
+              className="btn-primary py-3 px-6 rounded-2xl text-lg">
               {n}
             </button>
           ))}
@@ -371,13 +378,13 @@ function ConfigPicker({
       <div className="flex gap-3">
         <button
           onClick={() => onStart(rounds, false)}
-          className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-xl"
+          className="btn-primary rounded-xl"
         >
           Yo adivino
         </button>
         <button
           onClick={() => onStart(rounds, true)}
-          className="bg-blue-400 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl"
+          className="btn-secondary rounded-xl"
         >
           {oppName} adivina
         </button>

@@ -1,20 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { GAMES, BRAND_ICON } from "@/lib/gameMeta";
+import { CoupleMascots } from "@/components/mascots/CoupleMascots";
+import { GAMES } from "@/lib/gameMeta";
 
 export function HomeContent() {
-  const BrandIcon = BRAND_ICON;
-
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6">
       <div className="text-center mb-10">
-        <h1 className="text-5xl font-bold mb-2 flex items-center justify-center gap-3">
-          <BrandIcon size={48} className="text-pink-500" aria-hidden />
+        <div className="flex justify-center mb-3">
+          <CoupleMascots size={72} />
+        </div>
+        <h1 className="text-5xl font-extrabold mb-2 bg-gradient-to-r from-pink-500 to-rose-400 bg-clip-text text-transparent">
           CuddleArcade
         </h1>
-        <p className="text-lg opacity-70 flex items-center justify-center gap-2">
-          <BrandIcon size={20} className="text-pink-400" aria-hidden />
+        <p className="text-lg text-pink-400/80 font-semibold">
           Solo tú y yo
         </p>
       </div>
@@ -26,21 +26,21 @@ export function HomeContent() {
             <Link
               key={game.id}
               href={`/lobby/new?game=${game.id}`}
-              className="bg-white border border-pink-200 rounded-2xl p-5 shadow hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer"
+              className="card-cute p-5 cursor-pointer"
             >
-              <div className="mb-2 text-pink-500">
-                <Icon size={36} aria-hidden />
+              <div className="mb-3">
+                <Icon size={40} />
               </div>
-              <h2 className="font-bold text-lg">{game.name}</h2>
-              <p className="text-sm opacity-60 mt-1">{game.desc}</p>
+              <h2 className="font-bold text-lg text-pink-900">{game.name}</h2>
+              <p className="text-sm text-pink-400/70 mt-1 font-medium">{game.desc}</p>
             </Link>
           );
         })}
       </div>
 
-      <div className="mt-10 text-sm opacity-50">
+      <div className="mt-10 text-sm text-pink-300 font-medium">
         ¿Ya tienes código de partida?{" "}
-        <Link href="/lobby/join" className="underline font-medium">
+        <Link href="/lobby/join" className="underline text-pink-500 hover:text-pink-600">
           Únete aquí
         </Link>
       </div>

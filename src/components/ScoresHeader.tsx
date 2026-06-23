@@ -2,7 +2,7 @@
 
 import { GameIcon } from "@/components/GameIcon";
 import { GAMES } from "@/lib/gameMeta";
-import { Trophy } from "lucide-react";
+import { TrophyIcon } from "@/components/icons/GameIcons";
 import type { GameId } from "@/lib/types";
 
 export function ScoresGameTitle({ id, label }: { id: GameId; label: string }) {
@@ -17,7 +17,7 @@ export function ScoresGameTitle({ id, label }: { id: GameId; label: string }) {
 export function ScoresPageHeader() {
   return (
     <h1 className="text-3xl font-bold mb-1 text-center flex items-center justify-center gap-2">
-      <Trophy size={32} className="text-yellow-500" aria-hidden />
+      <TrophyIcon size={32} className="shrink-0" />
       Top 10
     </h1>
   );

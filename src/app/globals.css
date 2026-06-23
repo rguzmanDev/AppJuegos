@@ -3,20 +3,79 @@
 :root {
   --color-rose: #f9a8d4;
   --color-rose-light: #fce7f3;
+  --color-rose-deep: #f472b6;
+  --color-sky: #93c5fd;
+  --color-sky-light: #dbeafe;
   --color-ochre: #c2853a;
   --color-navy: #1e3a5f;
   --color-moss: #4a6741;
-  --color-black: #0f0f0f;
-  --color-cream: #fdf6ee;
+  --color-black: #3d2c2e;
+  --color-cream: #fff8f3;
   --bg: var(--color-cream);
   --fg: var(--color-black);
-  --accent: var(--color-rose);
+  --accent: var(--color-rose-deep);
   --card-bg: #ffffff;
-  --card-border: #f3d5e8;
+  --card-border: #fbcfe8;
 }
 
 body {
   background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 10% 15%, rgba(249, 168, 212, 0.18) 0%, transparent 42%),
+    radial-gradient(circle at 90% 85%, rgba(147, 197, 253, 0.16) 0%, transparent 40%);
   color: var(--fg);
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-nunito), "Segoe UI", system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+@layer components {
+  .btn-cute {
+    @apply font-bold py-3 px-8 rounded-2xl transition-all duration-200 shadow-sm;
+    @apply hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-primary {
+    @apply font-bold py-3 px-8 rounded-2xl transition-all duration-200 shadow-sm;
+    @apply hover:scale-[1.02] active:scale-[0.98] text-white;
+    background: linear-gradient(135deg, #f9a8d4 0%, #f472b6 100%);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+  }
+
+  .btn-primary:disabled {
+    @apply opacity-40 cursor-not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    @apply font-bold py-3 px-8 rounded-2xl transition-all duration-200 shadow-sm;
+    @apply hover:scale-[1.02] active:scale-[0.98] text-white;
+    background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+  }
+
+  .btn-secondary:hover {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  }
+
+  .card-cute {
+    @apply bg-white border-2 border-pink-100 rounded-3xl shadow-sm cursor-pointer;
+    @apply hover:shadow-md hover:border-pink-200 hover:scale-[1.02] transition-all duration-200;
+  }
+
+  .badge-pollito {
+    @apply bg-gradient-to-r from-yellow-50 to-pink-50 border border-pink-100;
+  }
+
+  .badge-pinguinito {
+    @apply bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-100;
+  }
 }

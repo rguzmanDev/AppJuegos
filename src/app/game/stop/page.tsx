@@ -280,7 +280,7 @@ export default function StopPage() {
     <div className="flex w-full max-w-md justify-between items-center mb-4">
       <GameNavLink className="text-sm opacity-40 hover:opacity-70">← Inicio</GameNavLink>
       <span className="text-sm font-medium opacity-60 flex items-center gap-1">
-        <GameIcon gameId="stop" size={14} className="text-pink-500" />
+        <GameIcon gameId="stop" size={14} className="text-[var(--color-accent)]" />
         Stop · R {round}/{maxRounds}
       </span>
       <button onClick={endGame} className="text-sm opacity-40 hover:opacity-70">Salir</button>
@@ -290,12 +290,12 @@ export default function StopPage() {
   const ScoreBar = () => (
     <div className="flex gap-12 text-3xl font-bold mb-6">
       <div className="flex flex-col items-center gap-1">
-        <span className="text-pink-500">{myScore}</span>
+        <span className="text-[var(--color-accent)]">{myScore}</span>
         <span className="text-xs opacity-50">{myName}</span>
       </div>
       <span className="opacity-30 self-center">–</span>
       <div className="flex flex-col items-center gap-1">
-        <span className="text-blue-500">{oppScore}</span>
+        <span className="text-[var(--color-secondary)]">{oppScore}</span>
         <span className="text-xs opacity-50">{oppName}</span>
       </div>
     </div>
@@ -305,7 +305,7 @@ export default function StopPage() {
     if (!isHost) return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
-          <GameIcon gameId="stop" size={24} className="text-pink-500" />
+          <GameIcon gameId="stop" size={24} className="text-[var(--color-accent)]" />
           Bachillerato / Stop
         </h2>
         <p className="text-sm opacity-50 mb-4">Partida: {code}</p>
@@ -316,7 +316,7 @@ export default function StopPage() {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
-          <GameIcon gameId="stop" size={24} className="text-pink-500" />
+          <GameIcon gameId="stop" size={24} className="text-[var(--color-accent)]" />
           Bachillerato / Stop
         </h2>
         <p className="text-sm opacity-50 mb-8">Partida: {code}</p>
@@ -325,7 +325,7 @@ export default function StopPage() {
           {[4, 6, 8].map((n) => (
             <button key={n} onClick={() => setMaxRounds(n)}
               className={`font-bold py-3 px-6 rounded-xl text-lg border-2 transition-all ${
-                maxRounds === n ? "bg-pink-400 text-white border-pink-400" : "border-gray-200 hover:border-pink-300"
+                maxRounds === n ? "bg-[var(--color-accent)] text-white border-[var(--color-accent)]" : "border-[var(--color-border)] hover:border-[var(--color-accent)]"
               }`}>{n}</button>
           ))}
         </div>
@@ -334,12 +334,12 @@ export default function StopPage() {
           {[30, 60, 90].map((s) => (
             <button key={s} onClick={() => setTimeLimit(s)}
               className={`font-bold py-3 px-6 rounded-xl text-lg border-2 transition-all ${
-                timeLimit === s ? "bg-pink-400 text-white border-pink-400" : "border-gray-200 hover:border-pink-300"
+                timeLimit === s ? "bg-[var(--color-accent)] text-white border-[var(--color-accent)]" : "border-[var(--color-border)] hover:border-[var(--color-accent)]"
               }`}>{s}s</button>
           ))}
         </div>
         <button onClick={() => configGame(maxRounds, timeLimit)}
-          className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl">
+          className="btn-primary">
           Listo!
         </button>
         <LobbyExitLink className="mt-6 text-sm opacity-40 hover:opacity-70 underline">← Salir</LobbyExitLink>
@@ -352,7 +352,7 @@ export default function StopPage() {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-4 flex items-center justify-center gap-2">
-          <GameIcon gameId="stop" size={24} className="text-pink-500" />
+          <GameIcon gameId="stop" size={24} className="text-[var(--color-accent)]" />
           Fin del juego
         </h2>
         <p className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
@@ -384,7 +384,7 @@ export default function StopPage() {
         <ScoreBar />
         {isHost ? (
           <button onClick={startRound}
-            className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-4 px-10 rounded-xl text-xl flex items-center gap-2 mx-auto">
+            className="btn-primary py-4 px-10 text-xl flex items-center gap-2 mx-auto">
             <Dices size={24} aria-hidden />
             Iniciar ronda
           </button>
@@ -400,7 +400,7 @@ export default function StopPage() {
       <main className="min-h-screen flex flex-col items-center p-6">
         <HeaderBar />
         <div className="flex items-center gap-4 mb-4">
-          <div className="text-6xl font-bold text-pink-500">{letter}</div>
+          <div className="text-6xl font-bold text-[var(--color-accent)]">{letter}</div>
           <div className={`text-2xl font-bold ${timeLeft <= 10 ? "text-red-500 animate-pulse" : "opacity-60"}`}>
             {timeLeft}s
           </div>
@@ -421,7 +421,7 @@ export default function StopPage() {
                   className={`flex-1 border-2 rounded-lg px-3 py-2 outline-none disabled:opacity-50 ${
                     invalid
                       ? "border-red-300 focus:border-red-400"
-                      : "border-pink-200 focus:border-pink-400"
+                      : "border-[var(--color-border)] focus:border-pink-400"
                   }`}
                   placeholder={`Con ${letter}...`}
                 />
@@ -432,7 +432,7 @@ export default function StopPage() {
 
         {!submitted ? (
           <button onClick={doSubmit}
-            className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-10 rounded-xl text-lg flex items-center gap-2">
+            className="btn-primary text-lg flex items-center gap-2">
             <Hand size={20} aria-hidden />
             STOP!
           </button>
@@ -455,10 +455,10 @@ export default function StopPage() {
         <div className="w-full max-w-md overflow-auto mb-4">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left border-b border-pink-200">
+              <tr className="text-left border-b border-[var(--color-border)]">
                 <th className="pb-2 opacity-60">Categoría</th>
-                <th className="pb-2 text-pink-500">{myName}</th>
-                <th className="pb-2 text-blue-500">{oppName}</th>
+                <th className="pb-2 text-[var(--color-accent)]">{myName}</th>
+                <th className="pb-2 text-[var(--color-secondary)]">{oppName}</th>
               </tr>
             </thead>
             <tbody>
@@ -508,7 +508,7 @@ export default function StopPage() {
 
         {!iReviewDone ? (
           <button onClick={confirmReview}
-            className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl flex items-center gap-2">
+            className="btn-primary flex items-center gap-2">
             <Check size={18} aria-hidden />
             Confirmar revisión
           </button>
@@ -528,18 +528,18 @@ export default function StopPage() {
 
       {roundScore && (
         <p className="text-sm mb-3 font-medium">
-          Esta ronda: <span className="text-pink-500">+{roundScore.myPts} pts</span> vs{" "}
-          <span className="text-blue-500">+{roundScore.oppPts} pts</span>
+          Esta ronda: <span className="text-[var(--color-accent)]">+{roundScore.myPts} pts</span> vs{" "}
+          <span className="text-[var(--color-secondary)]">+{roundScore.oppPts} pts</span>
         </p>
       )}
 
       <div className="w-full max-w-md overflow-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left border-b border-pink-200">
+            <tr className="text-left border-b border-[var(--color-border)]">
               <th className="pb-2 opacity-60">Categoría</th>
-              <th className="pb-2 text-pink-500">{myName}</th>
-              <th className="pb-2 text-blue-500">{oppName}</th>
+              <th className="pb-2 text-[var(--color-accent)]">{myName}</th>
+              <th className="pb-2 text-[var(--color-secondary)]">{oppName}</th>
             </tr>
           </thead>
           <tbody>
@@ -573,7 +573,7 @@ export default function StopPage() {
 
       {isHost ? (
         <button onClick={nextRound}
-          className="mt-6 bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl">
+          className="mt-6 btn-primary">
           Siguiente ronda →
         </button>
       ) : (

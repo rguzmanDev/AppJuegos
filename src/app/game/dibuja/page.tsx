@@ -324,7 +324,7 @@ export default function DibujaPage() {
     <div className="flex w-full max-w-lg justify-between items-center mb-3">
       <GameNavLink className="text-sm opacity-40 hover:opacity-70">← Inicio</GameNavLink>
       <span className="text-sm font-medium opacity-60 flex items-center gap-1">
-        <GameIcon gameId="dibuja" size={14} className="text-pink-500" />
+        <GameIcon gameId="dibuja" size={14} className="text-[var(--color-accent)]" />
         Dibuja · R {round}/{maxRounds}
       </span>
       <GameNavLink className="text-sm opacity-40 hover:opacity-70">Salir</GameNavLink>
@@ -334,12 +334,12 @@ export default function DibujaPage() {
   const ScoreBar = () => (
     <div className="flex gap-12 text-2xl font-bold mb-4">
       <div className="flex flex-col items-center gap-1">
-        <span className="text-pink-500">{myScore}</span>
+        <span className="text-[var(--color-accent)]">{myScore}</span>
         <span className="text-xs opacity-50">{myName}</span>
       </div>
       <span className="opacity-30 self-center">–</span>
       <div className="flex flex-col items-center gap-1">
-        <span className="text-blue-500">{oppScore}</span>
+        <span className="text-[var(--color-secondary)]">{oppScore}</span>
         <span className="text-xs opacity-50">{oppName}</span>
       </div>
     </div>
@@ -349,7 +349,7 @@ export default function DibujaPage() {
     if (!isHost) return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
-          <GameIcon gameId="dibuja" size={24} className="text-pink-500" />
+          <GameIcon gameId="dibuja" size={24} className="text-[var(--color-accent)]" />
           Dibuja y Adivina
         </h2>
         <p className="text-sm opacity-50 mb-4">Partida: {code}</p>
@@ -360,7 +360,7 @@ export default function DibujaPage() {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
-          <GameIcon gameId="dibuja" size={24} className="text-pink-500" />
+          <GameIcon gameId="dibuja" size={24} className="text-[var(--color-accent)]" />
           Dibuja y Adivina
         </h2>
         <p className="text-sm opacity-50 mb-6">Partida: {code}</p>
@@ -410,13 +410,13 @@ export default function DibujaPage() {
           onKeyDown={(e) => e.key === "Enter" && submitWord()}
           placeholder="Que vas a dibujar?"
           maxLength={20}
-          className="border-2 border-pink-300 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-widest outline-none focus:border-pink-500 uppercase mb-4 w-full max-w-xs"
+          className="input-field text-xl font-mono tracking-widest uppercase mb-4 w-full max-w-xs"
           autoFocus
         />
         <button
           onClick={submitWord}
           disabled={!isWordValid(wordInput)}
-          className="bg-pink-400 hover:bg-pink-500 disabled:opacity-40 text-white font-bold py-3 px-8 rounded-xl"
+          className="btn-primary disabled:opacity-40"
         >
           A dibujar!
         </button>
@@ -431,8 +431,8 @@ export default function DibujaPage() {
 
       {isDrawer ? (
         <div className="flex items-center gap-4 mb-2">
-          <div className="bg-pink-100 border border-pink-300 rounded-xl px-4 py-1 font-bold">
-            Dibuja: <span className="text-pink-600">{word}</span>
+          <div className="bg-[var(--color-accent-light)] border border-[var(--color-border)] rounded-xl px-4 py-1 font-bold">
+            Dibuja: <span className="text-[var(--color-accent)]">{word}</span>
           </div>
           <span className={`font-bold ${timeLeft <= 10 ? "text-red-500 animate-pulse" : "opacity-60"}`}>{timeLeft}s</span>
         </div>
@@ -447,7 +447,7 @@ export default function DibujaPage() {
         ref={canvasRef}
         width={500}
         height={350}
-        className="border-2 border-pink-200 rounded-2xl bg-white mb-2 touch-none"
+        className="border-2 border-[var(--color-border)] rounded-2xl bg-white mb-2 touch-none"
         style={{ maxWidth: "100%", cursor: isDrawer ? "crosshair" : "default" }}
         onMouseDown={onPointerDown}
         onMouseMove={onPointerMove}
@@ -509,9 +509,9 @@ export default function DibujaPage() {
             onChange={(e) => setGuess(filterPlainText(e.target.value))}
             onKeyDown={(e) => e.key === "Enter" && sendGuess()}
             placeholder="Tu respuesta..."
-            className="flex-1 border-2 border-pink-200 rounded-xl px-4 py-2 outline-none focus:border-pink-400"
+            className="flex-1 border-2 border-[var(--color-border)] rounded-xl px-4 py-2 outline-none focus:border-pink-400"
           />
-          <button onClick={sendGuess} className="bg-pink-400 hover:bg-pink-500 text-white font-bold px-4 py-2 rounded-xl">
+          <button onClick={sendGuess} className="btn-primary px-4 py-2">
             Enviar
           </button>
         </div>
@@ -523,7 +523,7 @@ export default function DibujaPage() {
             {roundWinner ? `${roundWinner} adivino!` : `Tiempo agotado. Era: ${word}`}
           </p>
           {isHost ? (
-            <button onClick={nextRound} className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl mt-2">
+            <button onClick={nextRound} className="btn-primary mt-2">
               Siguiente ronda
             </button>
           ) : (
@@ -551,7 +551,7 @@ function DibujaConfigPicker({
         <div className="flex gap-3">
           {[4, 6, 8].map((n) => (
             <button key={n} onClick={() => setRounds(n)}
-              className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-xl text-lg">
+              className="btn-primary py-3 px-6 text-lg">
               {n}
             </button>
           ))}

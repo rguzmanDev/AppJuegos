@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Pollito } from "@/components/mascots/Mascots";
 import { GameNavLink, LobbyExitLink } from "@/components/GameNavLink";
-import { GameIcon } from "@/components/GameIcon";
 import { LetterKeyboard } from "@/components/LetterKeyboard";
 import { RematchPanel, useRematch } from "@/components/RematchPanel";
+import { Button } from "@/components/ui/Button";
+import { GameTitle } from "@/components/ui/GameTitle";
+import { LivesHearts } from "@/components/ui/LivesHearts";
 import { useRoom } from "@/lib/useRoom";
 import { filterWordText, isWordValid } from "@/lib/validation";
 import type { GameEvent } from "@/lib/types";
@@ -154,7 +155,7 @@ export default function AhorcadoPage() {
   const oppName = opponent?.nickname ?? "Ellos";
   const errors = guessed.filter((l) => word && !word.includes(l)).length;
   const gameOver = round > maxRounds;
-  const pollitoShake = errors >= 4;
+  const livesRemaining = Math.max(0, MAX_ERRORS - errors);
 
   const iWon = myScore > oppScore;
   const isTie = myScore === oppScore;
@@ -169,22 +170,22 @@ export default function AhorcadoPage() {
 
   const Header = () => (
     <div className="flex w-full max-w-sm justify-between items-center mb-4">
-      <GameNavLink className="text-sm opacity-40 hover:opacity-70">← Inicio</GameNavLink>
-      <span className="text-sm font-medium opacity-60">Ahorcado · R {round}/{maxRounds}</span>
-      <button onClick={endGame} className="text-sm opacity-40 hover:opacity-70">Salir</button>
+      <GameNavLink className="btn-ghost text-sm py-1 px-2">Inicio</GameNavLink>
+      <span className="text-sm text-muted">Ahorcado · R {round}/{maxRounds}</span>
+      <button type="button" onClick={endGame} className="btn-ghost text-sm py-1 px-2">Salir</button>
     </div>
   );
 
   const Scores = () => (
     <div className="flex gap-12 text-3xl font-bold mb-6">
       <div className="flex flex-col items-center gap-1">
-        <span className="text-pink-500">{myScore}</span>
-        <span className="text-xs opacity-50">{myName}</span>
+        <span className="text-[var(--color-accent)]">{myScore}</span>
+        <span className="text-xs text-muted">{myName}</span>
       </div>
-      <span className="opacity-30 self-center">–</span>
+      <span className="text-muted self-center">–</span>
       <div className="flex flex-col items-center gap-1">
-        <span className="text-blue-500">{oppScore}</span>
-        <span className="text-xs opacity-50">{oppName}</span>
+        <span className="text-[var(--color-secondary)]">{oppScore}</span>
+        <span className="text-xs text-muted">{oppName}</span>
       </div>
     </div>
   );
@@ -192,24 +193,18 @@ export default function AhorcadoPage() {
   if (phase === "config") {
     if (!isHost) return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
-          <GameIcon gameId="ahorcado" size={24} className="text-pink-500" />
-          Ahorcado
-        </h2>
-        <p className="text-sm opacity-50 mb-4">Partida: {code}</p>
-        <p className="animate-pulse opacity-60">Esperando configuración del anfitrión...</p>
-        <LobbyExitLink className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</LobbyExitLink>
+        <GameTitle gameId="ahorcado" title="Ahorcado" />
+        <p className="text-sm text-muted mb-4 mt-2">Partida: {code}</p>
+        <p className="text-muted animate-pulse">Esperando configuración del anfitrión...</p>
+        <LobbyExitLink className="mt-8 btn-ghost text-sm">Salir</LobbyExitLink>
       </main>
     );
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
-          <GameIcon gameId="ahorcado" size={24} className="text-pink-500" />
-          Ahorcado
-        </h2>
-        <p className="text-sm opacity-50 mb-6">Partida: {code}</p>
+        <GameTitle gameId="ahorcado" title="Ahorcado" />
+        <p className="text-sm text-muted mb-6 mt-2">Partida: {code}</p>
         <ConfigPicker oppName={oppName} onStart={startGame} />
-        <LobbyExitLink className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</LobbyExitLink>
+        <LobbyExitLink className="mt-8 btn-ghost text-sm">Salir</LobbyExitLink>
       </main>
     );
   }
@@ -254,16 +249,12 @@ export default function AhorcadoPage() {
           onKeyDown={(e) => e.key === "Enter" && submitWord()}
           placeholder="Escribe la palabra secreta"
           maxLength={20}
-          className="border-2 border-pink-300 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-widest outline-none focus:border-pink-500 uppercase mb-4 w-full max-w-xs"
+          className="input-field text-xl font-mono tracking-widest uppercase mb-4 w-full max-w-xs"
           autoFocus
         />
-        <button
-          onClick={submitWord}
-          disabled={!isWordValid(wordInput)}
-          className="btn-primary rounded-xl"
-        >
-          Listo! Que adivine →
-        </button>
+        <Button onClick={submitWord} disabled={!isWordValid(wordInput)}>
+          Listo! Que adivine
+        </Button>
       </main>
     );
   }
@@ -273,20 +264,14 @@ export default function AhorcadoPage() {
       <Header />
       <Scores />
 
-      <div
-        className={`mb-2 transition-all duration-300 ${pollitoShake ? "animate-pulse" : ""}`}
-        style={{ opacity: Math.max(0.45, 1 - errors * 0.09), transform: `rotate(${errors * -2}deg)` }}
-      >
-        <Pollito size={72} />
-      </div>
-      <p className="text-sm opacity-40 mb-4">Errores: {errors}/{MAX_ERRORS}</p>
+      <LivesHearts total={MAX_ERRORS} remaining={livesRemaining} />
 
       <p className="text-sm mb-3 font-medium">
         {isGuesser ? "Estás adivinando" : `${oppName} está adivinando… tú ves la palabra:`}
       </p>
 
       {!isGuesser && (
-        <div className="bg-pink-100 border border-pink-300 rounded-xl px-6 py-2 mb-3 font-bold text-lg">
+        <div className="bg-[var(--color-accent-light)] border border-[var(--color-border)] rounded-xl px-6 py-2 mb-3 font-bold text-lg">
           {word}
         </div>
       )}
@@ -305,9 +290,7 @@ export default function AhorcadoPage() {
             {isGuesser ? "Adivinaste!" : `${oppName} adivinó`}
           </p>
           {isHost ? (
-            <button onClick={nextRound} className="btn-primary rounded-xl">
-              Siguiente ronda →
-            </button>
+            <Button onClick={nextRound}>Siguiente ronda</Button>
           ) : (
             <p className="text-sm animate-pulse opacity-50">Esperando al anfitrión...</p>
           )}
@@ -321,9 +304,7 @@ export default function AhorcadoPage() {
           </p>
           <p className="opacity-60 mb-3">La palabra era: <strong>{word}</strong></p>
           {isHost ? (
-            <button onClick={nextRound} className="btn-primary rounded-xl">
-              Siguiente ronda →
-            </button>
+            <Button onClick={nextRound}>Siguiente ronda</Button>
           ) : (
             <p className="text-sm animate-pulse opacity-50">Esperando al anfitrión...</p>
           )}
@@ -357,7 +338,7 @@ function ConfigPicker({
         <div className="flex gap-3">
           {[4, 6, 8].map((n) => (
             <button key={n} onClick={() => setRounds(n)}
-              className="btn-primary py-3 px-6 rounded-2xl text-lg">
+              className="btn-primary py-3 px-6 text-lg">
               {n}
             </button>
           ))}
@@ -372,19 +353,19 @@ function ConfigPicker({
       <div className="flex gap-3">
         <button
           onClick={() => onStart(rounds, false)}
-          className="btn-primary rounded-xl"
+          className="btn-primary"
         >
           Yo adivino
         </button>
         <button
           onClick={() => onStart(rounds, true)}
-          className="btn-secondary rounded-xl"
+          className="btn-secondary"
         >
           {oppName} adivina
         </button>
       </div>
-      <button onClick={() => setRounds(null)} className="text-xs opacity-40 hover:opacity-60 underline">
-        ← Cambiar rondas
+      <button type="button" onClick={() => setRounds(null)} className="btn-ghost text-xs py-1 px-2">
+        Cambiar rondas
       </button>
     </div>
   );

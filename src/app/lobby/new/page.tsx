@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CopyableText } from "@/components/CopyableText";
-import { GameIcon, MascotIcon } from "@/components/GameIcon";
+import { MascotIcon } from "@/components/GameIcon";
+import { Button } from "@/components/ui/Button";
+import { GameTitle } from "@/components/ui/GameTitle";
 import { getSocket } from "@/lib/socket";
 import { savePlayerIdentity, saveRoomToSession } from "@/lib/useRoom";
 import { getGameMeta } from "@/lib/gameMeta";
@@ -58,39 +60,36 @@ export default function NewLobbyPage() {
 
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
-          <GameIcon gameId={room.gameId} size={28} className="text-pink-500" />
-          {getGameMeta(room.gameId).name}
-        </h2>
-        <p className="mb-6 opacity-60">Comparte el código con tu pareja</p>
+        <GameTitle gameId={room.gameId} title={getGameMeta(room.gameId).name} iconSize={32} />
+        <p className="mb-6 text-muted mt-2">Comparte el código con tu pareja</p>
 
         <CopyableText
           text={room.code}
           label="Código copiado!"
-          className="bg-white border-2 border-pink-300 rounded-2xl px-10 py-6 text-5xl font-mono font-bold tracking-widest shadow-lg mb-6 hover:border-pink-400"
+          className="card font-mono text-5xl font-bold tracking-widest mb-6"
         />
 
-        <p className="text-sm opacity-50 mb-2">O comparte este link (clic para copiar):</p>
+        <p className="text-sm text-muted mb-2">O comparte este link (clic para copiar):</p>
         <CopyableText
           text={joinUrl}
           label="Link copiado!"
-          className="text-sm font-medium bg-pink-50 px-4 py-2 rounded-lg border border-pink-200 break-all hover:bg-pink-100"
+          className="text-sm card py-2 break-all w-full max-w-sm"
         />
 
         <div className="mt-8 flex gap-3 items-center flex-wrap justify-center">
           {room.players.map((p) => (
             <div
               key={p.id}
-              className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
-                p.isHost ? "badge-pollito" : "badge-pinguinito"
+              className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 ${
+                p.isHost ? "badge-host" : "badge-guest"
               }`}
             >
               <MascotIcon variant={p.isHost ? "pollito" : "pinguinito"} size={20} />
-              <span className={p.isHost ? "text-pink-800" : "text-sky-800"}>{p.nickname}</span>
+              <span>{p.nickname}</span>
             </div>
           ))}
           {room.players.length < 2 && (
-            <div className="text-sm text-pink-300 animate-pulse font-medium flex items-center gap-1.5">
+            <div className="text-sm text-muted animate-pulse flex items-center gap-1.5">
               <MascotIcon variant="pinguinito" size={18} />
               Esperando pareja...
             </div>
@@ -102,11 +101,8 @@ export default function NewLobbyPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-      <h2 className="text-3xl font-bold mb-1 flex items-center justify-center gap-2">
-        <GameIcon gameId={gameId} size={28} className="text-pink-500" />
-        {gameMeta.name}
-      </h2>
-      <p className="opacity-60 mb-8">Nueva partida</p>
+      <GameTitle gameId={gameId} title={gameMeta.name} iconSize={32} />
+      <p className="text-muted mb-8 mt-2">Nueva partida</p>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <input
@@ -116,16 +112,12 @@ export default function NewLobbyPage() {
           maxLength={20}
           onChange={(e) => setNickname(filterPlainText(e.target.value))}
           onKeyDown={(e) => e.key === "Enter" && createRoom()}
-          className="border-2 border-pink-200 rounded-xl px-4 py-3 text-center text-lg outline-none focus:border-pink-400"
+          className="input-field text-lg"
         />
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button
-          onClick={createRoom}
-          disabled={!isPlainTextValid(nickname)}
-          className="btn-primary w-full rounded-xl"
-        >
+        <Button onClick={createRoom} disabled={!isPlainTextValid(nickname)} fullWidth>
           Crear partida
-        </button>
+        </Button>
       </div>
     </main>
   );

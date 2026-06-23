@@ -15,7 +15,7 @@ export function Pollito({ size = 48, className }: MascotProps) {
       alt=""
       width={size}
       height={size}
-      className={clsx("shrink-0 drop-shadow-sm", className)}
+      className={clsx("shrink-0", className)}
       aria-hidden
       draggable={false}
     />
@@ -29,7 +29,7 @@ export function Pinguinito({ size = 48, className }: MascotProps) {
       alt=""
       width={size}
       height={size}
-      className={clsx("shrink-0 drop-shadow-sm", className)}
+      className={clsx("shrink-0", className)}
       aria-hidden
       draggable={false}
     />
@@ -44,11 +44,8 @@ interface CoupleMascotsProps {
 export function CoupleMascots({ size = 48, className }: CoupleMascotsProps) {
   const half = Math.round(size * 0.72);
   return (
-    <span className={clsx("inline-flex items-end gap-1", className)} aria-hidden>
+    <span className={clsx("inline-flex items-end gap-2", className)} aria-hidden>
       <Pollito size={half} />
-      <span className="text-pink-400 leading-none pb-1" style={{ fontSize: size * 0.28 }}>
-        ♥
-      </span>
       <Pinguinito size={half} />
     </span>
   );

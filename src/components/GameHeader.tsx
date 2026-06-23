@@ -15,15 +15,15 @@ export function GameHeaderBar({ gameId, title, left, center, onExit }: GameHeade
   return (
     <div className="flex w-full max-w-lg justify-between items-center mb-3">
       {left ?? (
-        <button type="button" onClick={onExit} className="text-sm text-pink-300 hover:text-pink-500 font-medium">
+        <button type="button" onClick={onExit} className="btn-ghost text-sm py-1 px-2">
           Inicio
         </button>
       )}
-      <span className="text-sm font-semibold text-pink-400/80 flex items-center gap-1.5">
+      <span className="text-sm text-muted flex items-center gap-1.5">
         {gameId && <GameIcon gameId={gameId} size={16} />}
         {center ?? title}
       </span>
-      <button type="button" onClick={onExit} className="text-sm text-pink-300 hover:text-pink-500 font-medium">
+      <button type="button" onClick={onExit} className="btn-ghost text-sm py-1 px-2">
         Salir
       </button>
     </div>
@@ -33,12 +33,12 @@ export function GameHeaderBar({ gameId, title, left, center, onExit }: GameHeade
 export function PlayerBadge({ nickname, isHost }: { nickname: string; isHost: boolean }) {
   return (
     <div
-      className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
-        isHost ? "badge-pollito" : "badge-pinguinito"
+      className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 ${
+        isHost ? "badge-host" : "badge-guest"
       }`}
     >
       <MascotIcon variant={isHost ? "pollito" : "pinguinito"} size={20} />
-      <span className={isHost ? "text-pink-800" : "text-sky-800"}>{nickname}</span>
+      <span>{nickname}</span>
     </div>
   );
 }

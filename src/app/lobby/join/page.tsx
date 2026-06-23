@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { CoupleMascots } from "@/components/mascots/Mascots";
+import { Button } from "@/components/ui/Button";
 import { getSocket } from "@/lib/socket";
 import { savePlayerIdentity, saveRoomToSession } from "@/lib/useRoom";
 import { filterPlainText, isPlainTextValid } from "@/lib/validation";
 import type { Room } from "@/lib/types";
-import { CoupleMascots } from "@/components/mascots/Mascots";
 
 export default function JoinLobbyPage() {
   const searchParams = useSearchParams();
@@ -50,8 +51,8 @@ export default function JoinLobbyPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
       <CoupleMascots size={56} className="mb-4" />
-      <h2 className="text-3xl font-extrabold mb-1 text-pink-900">Unirse a partida</h2>
-      <p className="opacity-60 mb-8">Ingresa el código que te compartieron</p>
+      <h2 className="font-display text-3xl font-bold mb-1">Unirse a partida</h2>
+      <p className="text-muted mb-8">Ingresa el código que te compartieron</p>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <input
@@ -60,7 +61,7 @@ export default function JoinLobbyPage() {
           value={code}
           maxLength={6}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          className="border-2 border-pink-200 rounded-xl px-4 py-3 text-center text-2xl font-mono tracking-widest outline-none focus:border-pink-400 uppercase"
+          className="input-field text-2xl font-mono tracking-widest uppercase"
         />
         <input
           type="text"
@@ -69,16 +70,12 @@ export default function JoinLobbyPage() {
           maxLength={20}
           onChange={(e) => setNickname(filterPlainText(e.target.value))}
           onKeyDown={(e) => e.key === "Enter" && join()}
-          className="border-2 border-pink-200 rounded-xl px-4 py-3 text-center text-lg outline-none focus:border-pink-400"
+          className="input-field text-lg"
         />
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button
-          onClick={join}
-          disabled={!isPlainTextValid(nickname) || !code.trim()}
-          className="btn-primary w-full rounded-xl"
-        >
+        <Button onClick={join} disabled={!isPlainTextValid(nickname) || !code.trim()} fullWidth>
           Unirse
-        </button>
+        </Button>
       </div>
     </main>
   );

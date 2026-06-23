@@ -2,24 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { FileText, Mountain, Scissors, Trophy } from "lucide-react";
 import { GameNavLink, LobbyExitLink } from "@/components/GameNavLink";
 import { GameIcon } from "@/components/GameIcon";
 import { RematchPanel, useRematch } from "@/components/RematchPanel";
+import { Button } from "@/components/ui/Button";
+import { EmojiIcon } from "@/components/ui/EmojiIcon";
+import { GameTitle } from "@/components/ui/GameTitle";
+import { TrophyIcon } from "@/components/icons/GameIcons";
 import { useRoom } from "@/lib/useRoom";
+import { PPT_CHOICE_EMOJI, PPT_CHOICES, type PPTChoice } from "@/lib/ppt";
 import type { GameEvent } from "@/lib/types";
-import type { LucideIcon } from "lucide-react";
 
-type Choice = "piedra" | "papel" | "tijera";
-
-const CHOICE_ICONS: Record<Choice, LucideIcon> = {
-  piedra: Mountain,
-  papel: FileText,
-  tijera: Scissors,
-};
-const CHOICES: Choice[] = ["piedra", "papel", "tijera"];
-
-function beats(a: Choice, b: Choice) {
+function beats(a: PPTChoice, b: PPTChoice) {
   return (
     (a === "piedra" && b === "tijera") ||
     (a === "papel" && b === "piedra") ||
@@ -36,11 +30,11 @@ export default function PPTPage() {
 
   const myIdRef = useRef(myId);
   useEffect(() => { myIdRef.current = myId; }, [myId]);
-  const myChoiceRef = useRef<Choice | null>(null);
-  const oppChoiceRef = useRef<Choice | null>(null);
+  const myChoiceRef = useRef<PPTChoice | null>(null);
+  const oppChoiceRef = useRef<PPTChoice | null>(null);
 
-  const [myChoice, setMyChoice] = useState<Choice | null>(null);
-  const [oppChoice, setOppChoice] = useState<Choice | null>(null);
+  const [myChoice, setMyChoice] = useState<PPTChoice | null>(null);
+  const [oppChoice, setOppChoice] = useState<PPTChoice | null>(null);
   const [myScore, setMyScore] = useState(0);
   const [oppScore, setOppScore] = useState(0);
   const [round, setRound] = useState(1);
@@ -76,7 +70,7 @@ export default function PPTPage() {
       }
 
       if (type === "ppt:choice" && _from !== myIdRef.current) {
-        const { choice } = payload as { choice: Choice };
+        const { choice } = payload as { choice: PPTChoice };
         oppChoiceRef.current = choice;
         setOppChoice(choice);
         if (myChoiceRef.current) {
@@ -105,7 +99,7 @@ export default function PPTPage() {
     return () => { socket.off("game:event", handler); };
   }, [socket, router]);
 
-  function resolve(mine: Choice, theirs: Choice) {
+  function resolve(mine: PPTChoice, theirs: PPTChoice) {
     let label = "Empate!";
     if (beats(mine, theirs)) { setMyScore((s) => s + 1); label = "Ganaste!"; }
     else if (beats(theirs, mine)) { setOppScore((s) => s + 1); label = "Perdiste"; }
@@ -119,7 +113,7 @@ export default function PPTPage() {
     setPhase("choosing");
   }
 
-  function choose(c: Choice) {
+  function choose(c: PPTChoice) {
     if (myChoice || phase !== "choosing") return;
     myChoiceRef.current = c;
     setMyChoice(c);
@@ -152,36 +146,43 @@ export default function PPTPage() {
     onAccept: resetRematch,
   });
 
+  const Scores = () => (
+    <div className="flex gap-12 text-3xl font-bold my-6">
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-[var(--color-accent)]">{myScore}</span>
+        <span className="text-xs text-muted">{myName}</span>
+      </div>
+      <span className="text-muted self-center">–</span>
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-[var(--color-secondary)]">{oppScore}</span>
+        <span className="text-xs text-muted">{oppName}</span>
+      </div>
+    </div>
+  );
+
   if (phase === "config") {
     if (!isHost) return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
-          <GameIcon gameId="ppt" size={24} className="text-pink-500" />
-          Piedra Papel Tijera
-        </h2>
-        <p className="text-sm opacity-50 mb-4">Partida: {code}</p>
-        <p className="animate-pulse opacity-60">Esperando configuración del anfitrión...</p>
-        <LobbyExitLink className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</LobbyExitLink>
+        <GameTitle gameId="ppt" title="Piedra Papel Tijera" />
+        <p className="text-sm text-muted mb-4 mt-2">Partida: {code}</p>
+        <p className="text-muted animate-pulse">Esperando configuración del anfitrión...</p>
+        <LobbyExitLink className="mt-8 btn-ghost text-sm">Salir</LobbyExitLink>
       </main>
     );
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-1 flex items-center justify-center gap-2">
-          <GameIcon gameId="ppt" size={24} className="text-pink-500" />
-          Piedra Papel Tijera
-        </h2>
-        <p className="text-sm opacity-50 mb-8">Partida: {code}</p>
+        <GameTitle gameId="ppt" title="Piedra Papel Tijera" />
+        <p className="text-sm text-muted mb-8 mt-2">Partida: {code}</p>
         <p className="font-medium mb-4">¿Cuántas rondas?</p>
         <div className="flex gap-3 mb-4">
           {[3, 5, 7].map((n) => (
-            <button key={n} onClick={() => startGame(n)}
-              className="bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-xl text-lg">
+            <Button key={n} onClick={() => startGame(n)} className="text-lg px-8">
               {n}
-            </button>
+            </Button>
           ))}
         </div>
-        <p className="text-xs opacity-40 mt-2">Gana quien llegue primero a la mitad de victorias.</p>
-        <LobbyExitLink className="mt-8 text-sm opacity-40 hover:opacity-70 underline">← Salir</LobbyExitLink>
+        <p className="text-xs text-muted mt-2">Gana quien llegue primero a la mitad de victorias.</p>
+        <LobbyExitLink className="mt-8 btn-ghost text-sm">Salir</LobbyExitLink>
       </main>
     );
   }
@@ -189,31 +190,13 @@ export default function PPTPage() {
   if (gameOver) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-2xl font-bold mb-6 flex items-center justify-center gap-2">
-          <GameIcon gameId="ppt" size={24} className="text-pink-500" />
-          Piedra Papel Tijera
-        </h2>
-        <p className="text-4xl font-bold mb-2 flex items-center justify-center gap-2">
-          <Trophy className="text-yellow-500" size={36} aria-hidden />
+        <GameTitle gameId="ppt" title="Piedra Papel Tijera" />
+        <p className="text-3xl font-bold mb-2 mt-4 flex items-center justify-center gap-2">
+          <TrophyIcon size={32} />
           {iWon ? myName : oppName} gana!
         </p>
-        <div className="flex gap-12 text-3xl font-bold my-6">
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-pink-500">{myScore}</span>
-            <span className="text-xs opacity-50">{myName}</span>
-          </div>
-          <span className="opacity-30 self-center">–</span>
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-blue-500">{oppScore}</span>
-            <span className="text-xs opacity-50">{oppName}</span>
-          </div>
-        </div>
-        <RematchPanel
-          oppName={oppName}
-          isWinner={iWon}
-          isLoser={!iWon}
-          rematch={rematch}
-        />
+        <Scores />
+        <RematchPanel oppName={oppName} isWinner={iWon} isLoser={!iWon} rematch={rematch} />
       </main>
     );
   }
@@ -221,42 +204,34 @@ export default function PPTPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
       <div className="flex w-full max-w-sm justify-between items-center mb-6">
-        <GameNavLink className="text-sm opacity-40 hover:opacity-70">← Inicio</GameNavLink>
-        <span className="text-sm font-medium opacity-60">Ronda {round}/{maxRounds}</span>
-        <button onClick={endGame} className="text-sm opacity-40 hover:opacity-70">Salir</button>
+        <GameNavLink className="btn-ghost text-sm py-1 px-2">Inicio</GameNavLink>
+        <span className="text-sm text-muted">Ronda {round}/{maxRounds}</span>
+        <button type="button" onClick={endGame} className="btn-ghost text-sm py-1 px-2">Salir</button>
       </div>
 
-      <div className="flex gap-12 text-4xl font-bold mb-10">
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-pink-500">{myScore}</span>
-          <span className="text-xs opacity-50">{myName}</span>
-        </div>
-        <span className="opacity-30 self-center">–</span>
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-blue-500">{oppScore}</span>
-          <span className="text-xs opacity-50">{oppName}</span>
-        </div>
-      </div>
+      <Scores />
 
       {phase === "choosing" && (
         <>
-          <p className="mb-4 opacity-60">
+          <p className="mb-4 text-muted">
             {myChoice ? `Elegiste. Esperando a ${oppName}...` : "¿Qué eliges?"}
           </p>
           <div className="flex gap-4">
-            {CHOICES.map((c) => {
-              const Icon = CHOICE_ICONS[c];
-              return (
-                <button key={c} onClick={() => choose(c)} disabled={!!myChoice}
-                  className={`p-4 rounded-2xl border-2 transition-all ${
-                    myChoice === c
-                      ? "border-pink-400 bg-pink-50 scale-110"
-                      : "border-gray-200 hover:border-pink-300 hover:bg-pink-50"
-                  } disabled:cursor-default`}>
-                  <Icon size={48} className="text-pink-600" aria-label={c} />
-                </button>
-              );
-            })}
+            {PPT_CHOICES.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => choose(c)}
+                disabled={!!myChoice}
+                className={`p-3 rounded-xl border-2 transition-colors disabled:cursor-default ${
+                  myChoice === c
+                    ? "border-[var(--color-accent)] bg-[var(--color-accent-light)]"
+                    : "border-[var(--color-border)] hover:border-[var(--color-accent)]"
+                }`}
+              >
+                <EmojiIcon name={PPT_CHOICE_EMOJI[c]} size={52} label={c} />
+              </button>
+            ))}
           </div>
         </>
       )}
@@ -265,23 +240,20 @@ export default function PPTPage() {
         <div className="flex flex-col items-center gap-4">
           <div className="flex gap-8 items-center">
             <div className="flex flex-col items-center gap-1">
-              {myChoice && (() => { const I = CHOICE_ICONS[myChoice]; return <I size={56} className="text-pink-600" />; })()}
-              <span className="text-xs opacity-50">{myName}</span>
+              {myChoice && <EmojiIcon name={PPT_CHOICE_EMOJI[myChoice]} size={56} />}
+              <span className="text-xs text-muted">{myName}</span>
             </div>
-            <span className="opacity-30 text-2xl">vs</span>
+            <span className="text-muted text-lg">vs</span>
             <div className="flex flex-col items-center gap-1">
-              {oppChoice && (() => { const I = CHOICE_ICONS[oppChoice]; return <I size={56} className="text-blue-600" />; })()}
-              <span className="text-xs opacity-50">{oppName}</span>
+              {oppChoice && <EmojiIcon name={PPT_CHOICE_EMOJI[oppChoice]} size={56} />}
+              <span className="text-xs text-muted">{oppName}</span>
             </div>
           </div>
           <p className="text-2xl font-bold">{resultLabel}</p>
           {isHost ? (
-            <button onClick={nextRound}
-              className="mt-2 bg-pink-400 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-xl">
-              Siguiente ronda →
-            </button>
+            <Button onClick={nextRound} className="mt-2">Siguiente ronda</Button>
           ) : (
-            <p className="mt-2 text-sm animate-pulse opacity-50">Esperando al anfitrión...</p>
+            <p className="mt-2 text-sm text-muted animate-pulse">Esperando al anfitrión...</p>
           )}
         </div>
       )}

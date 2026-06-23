@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { GameNavLink } from "@/components/GameNavLink";
+import { Button } from "@/components/ui/Button";
 
 const REMATCH_SECONDS = 10;
 
@@ -146,42 +147,30 @@ export function RematchPanel({
 
       {showAcceptReject ? (
         <div className="flex flex-col sm:flex-row gap-2">
-          <button
-            onClick={acceptRematch}
-            className="btn-primary rounded-xl"
-          >
+          <Button onClick={acceptRematch}>
             {oppName} quiere revancha — Aceptar
-          </button>
-          <button
-            onClick={rejectRematch}
-            className="btn-cute bg-pink-100 text-pink-600 hover:bg-pink-200 rounded-xl"
-          >
+          </Button>
+          <Button variant="ghost" onClick={rejectRematch}>
             Rechazar
-          </button>
+          </Button>
         </div>
       ) : iRequested ? (
-        <p className="text-sm animate-pulse opacity-50">
+        <p className="text-sm text-muted animate-pulse">
           Esperando respuesta de {oppName}...
         </p>
       ) : canRequest ? (
-        <button
-          onClick={requestRematch}
-          className="btn-primary rounded-xl"
-        >
+        <Button onClick={requestRematch}>
           Pedir revancha ({secondsLeft}s)
-        </button>
+        </Button>
       ) : isWinner && !isTie && !theyRequested && !expired ? (
-        <p className="text-sm opacity-40">
+        <p className="text-sm text-muted">
           Espera a que {oppName} pida revancha... ({secondsLeft}s)
         </p>
       ) : expired && !iRequested && !theyRequested ? (
-        <p className="text-sm opacity-40">Tiempo de revancha agotado</p>
+        <p className="text-sm text-muted">Tiempo de revancha agotado</p>
       ) : null}
 
-      <GameNavLink
-        variant="button"
-        className="btn-cute bg-pink-50 text-pink-500 hover:bg-pink-100 rounded-xl"
-      >
+      <GameNavLink variant="button" className="btn-ghost">
         Inicio
       </GameNavLink>
     </div>

@@ -1,3 +1,39 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRoom } from "@/lib/useRoom";
+import type { GameEvent } from "@/lib/types";
+
+const CATEGORIES = ["Nombre", "Animal", "Fruta/Verdura", "País", "Color", "Cosa"];
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function randomLetter() {
+  return LETTERS[Math.floor(Math.random() * LETTERS.length)];
+}
+
+type Answers = Record<string, string>;
+type BothAnswers = { mine: Answers; theirs: Answers };
+
+function calcScore(mine: Answers, theirs: Answers): { myPts: number; oppPts: number } {
+  let myPts = 0;
+  let oppPts = 0;
+  for (const cat of CATEGORIES) {
+    const m = (mine[cat] ?? "").trim().toLowerCase();
+    const t = (theirs[cat] ?? "").trim().toLowerCase();
+    if (!m && !t) continue;
+    if (m && t && m === t) {
+      myPts += 50;
+      oppPts += 50;
+    } else {
+      if (m) myPts += 100;
+      if (t) oppPts += 100;
+    }
+  }
+  return { myPts, oppPts };
+}
+
 export default function StopPage() {
   const params = useSearchParams();
   const router = useRouter();

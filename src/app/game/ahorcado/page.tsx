@@ -417,4 +417,3 @@ function ConfigPicker({
     </div>
   );
 }
-"use client";

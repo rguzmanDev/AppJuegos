@@ -13,7 +13,7 @@ services:
       - key: NODE_VERSION
         value: "22"
       - key: CORS_ORIGIN
-        value: https://cuddle.onrender.com,https://cuddle.rgcore.dev,http://localhost:3000
+        value: https://cuddle.onrender.com,https://cuddle-wxs7.onrender.com,https://cuddle.rgcore.dev,http://localhost:3000
 
   - type: web
     name: cuddle

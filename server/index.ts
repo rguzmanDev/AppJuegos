@@ -13,6 +13,7 @@ const nanoid = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 6);
 const defaultOrigins = [
   "http://localhost:3000",
   "https://cuddle.onrender.com",
+  "https://cuddle-wxs7.onrender.com",
   "https://cuddle.rgcore.dev",
 ];
 const allowedOrigins = (process.env.CORS_ORIGIN ?? defaultOrigins.join(","))
